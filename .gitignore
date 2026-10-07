@@ -218,3 +218,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# AeroAdd
+.env
+data/*
+!data/.gitkeep
+influxdb-data/
+grafana-data/
+nodered-data/
+.opencode/
+*.log
