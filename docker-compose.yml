@@ -64,17 +64,24 @@ services:
     networks:
       - aeroadd
 
+  # Imagen propia: base fijada + node-red-contrib-influxdb (services/nodered/Dockerfile).
   nodered:
-    image: nodered/node-red:4.0.2
+    build:
+      context: ./services/nodered
     container_name: ${NODERED_CONTAINER_NAME:-aeroadd-nodered}
     ports:
       - "${NODERED_PORT:-1880}:1880"
     volumes:
       - nodered-data:/data
-      - ./services/nodered:/data:rw # TODO: flujos y settings de Node-RED
     env_file:
       - path: .env
         required: false
+    environment:
+      - FLOWS=flows.json
+      - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
+      - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
+      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
+      - INFLUXDB_TOKEN=${NODERED_INFLUXDB_TOKEN:-CAMBIAME} # token de escritura (scripts/create-tokens.sh)
     depends_on:
       influxdb:
         condition: service_healthy
