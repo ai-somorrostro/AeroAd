@@ -6,24 +6,31 @@ Proyecto de Big Data + IA para ingesta, visualización y análisis de datos.
 
 ```text
 AeroAdd/
-├── docker-compose.yml                # Pila base: InfluxDB, Grafana, Node-RED, loader y MCP
-├── .env.example                      # Plantilla de variables (copiar a .env y rellenar a mano)
-├── .gitignore
 ├── README.md
-├── AGENTS.md
+├── .gitignore
+├── .env.example            # variables de ejemplo, SIN secretos reales
+├── docker-compose.yml
+├── AGENTS.md               # instrucciones para opencode
+├── openspec/               # lo genera openspec
 ├── services/
-│   ├── influxdb/                     # TODO: configuración de InfluxDB
+│   ├── influxdb/           # scripts de init (buckets, tokens)
 │   ├── grafana/
-│   │   └── provisioning/             # TODO: aprovisionamiento de Grafana
-│   ├── nodered/                      # TODO: flujos de Node-RED
-│   ├── loader/
-│   │   └── src/                      # TODO: loader en Python+pandas
-│   └── mcp/
-│       └── src/                      # TODO: servicio MCP
-├── data/                             # Datos locales de ejemplo (no versionar contenido, ver .gitignore)
-├── notebooks/                        # TODO: notebooks de análisis
-├── docs/                             # TODO: documentación del proyecto
-└── scripts/                          # TODO: scripts auxiliares
+│   │   └── provisioning/   # datasources, dashboards, usuarios/orgs
+│   ├── nodered/
+│   │   ├── Dockerfile
+│   │   ├── settings.js
+│   │   └── flows.json
+│   ├── loader/             # python + pandas
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   └── src/
+│   └── mcp/                # servicio MCP
+│       ├── Dockerfile
+│       └── src/
+├── data/                   # datasets (gitignorados salvo .gitkeep)
+├── notebooks/              # parte SBD
+├── docs/                   # parte MIA, capturas, organigrama de buckets
+└── scripts/                # up.sh, down.sh, reset.sh
 ```
 
 ## Servicios
