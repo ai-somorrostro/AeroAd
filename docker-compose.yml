@@ -43,7 +43,7 @@ services:
       - "${GRAFANA_PORT:-3000}:3000"
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./services/grafana/provisioning:/etc/grafana/provisioning:ro # TODO: aprovisionamiento de Grafana
+      - ./services/grafana/provisioning:/etc/grafana/provisioning:ro # datasource Flux; TODO: dashboards
     env_file:
       - path: .env
         required: false
@@ -55,6 +55,12 @@ services:
       influxdb:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - aeroadd
 
