@@ -15,7 +15,8 @@ AeroAdd/
 ├── services/
 │   ├── influxdb/           # init: 01-create-buckets.sh (buckets de INFLUXDB_EXTRA_BUCKETS)
 │   ├── grafana/
-│   │   └── provisioning/   # datasources, dashboards, usuarios/orgs
+│   │   └── provisioning/
+│   │       └── datasources/influxdb.yml  # datasource InfluxDB (Flux) con token de lectura
 │   ├── nodered/
 │   │   ├── Dockerfile
 │   │   ├── settings.js
@@ -38,7 +39,7 @@ AeroAdd/
 | Servicio  | Imagen / build         | Puerto (ejemplo, ver `.env`) | Estado |
 |-----------|------------------------|------------------------------|--------|
 | influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
-| grafana   | `grafana/grafana:11.2.0` | `3000`                     | Base definida, pendiente de aprovisionamiento |
+| grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
 | nodered   | `nodered/node-red:4.0.2` | `1880`                     | Base definida, pendiente de flujos |
 | loader    | `build: ./services/loader` | — (sin puerto)             | Pendiente de Dockerfile e implementación |
 | mcp       | `build: ./services/mcp`    | `8000` (ejemplo)           | Pendiente de Dockerfile e implementación |
