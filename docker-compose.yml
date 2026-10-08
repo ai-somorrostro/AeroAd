@@ -12,6 +12,7 @@ services:
       - "${INFLUXDB_PORT:-8086}:8086"
     volumes:
       - influxdb-data:/var/lib/influxdb2
+      - ./services/influxdb/init:/docker-entrypoint-initdb.d:ro
       # TODO: montar configuración propia cuando exista (p. ej. ./services/influxdb/influx-configs:/etc/influxdb2:ro)
     env_file:
       - path: .env
@@ -24,6 +25,7 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
       - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CAMBIAME}
+      - INFLUXDB_EXTRA_BUCKETS=${INFLUXDB_EXTRA_BUCKETS:-} # TODO: lista separada por comas, rellenar a mano en .env
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "influx", "ping"]
