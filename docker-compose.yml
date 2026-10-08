@@ -12,23 +12,25 @@ services:
       - "${INFLUXDB_PORT:-8086}:8086"
     volumes:
       - influxdb-data:/var/lib/influxdb2
-      - ./services/influxdb:/etc/influxdb2:ro # TODO: configuración de InfluxDB
+      # TODO: montar configuración propia cuando exista (p. ej. ./services/influxdb/influx-configs:/etc/influxdb2:ro)
     env_file:
       - path: .env
         required: false
     environment:
+      # TODO: rellenar a mano en .env (usuario, contraseña, org, bucket y token). Sin valores reales aquí.
       - DOCKER_INFLUXDB_INIT_MODE=${INFLUXDB_INIT_MODE:-setup}
-      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_INIT_USERNAME:-ejemplo-usuario}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_INIT_PASSWORD:-CHANGEME}
-      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG:-ejemplo-org}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET:-ejemplo-bucket}
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CHANGEME}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_INIT_USERNAME:-CAMBIAME-usuario}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_INIT_PASSWORD:-CAMBIAME}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CAMBIAME}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "influx", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - aeroadd
 
@@ -82,9 +84,9 @@ services:
         required: false
     environment:
       - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
-      - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-ejemplo-org}
-      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-ejemplo-bucket}
-      - INFLUXDB_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CHANGEME}
+      - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
+      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
+      - INFLUXDB_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CAMBIAME}
     depends_on:
       influxdb:
         condition: service_healthy

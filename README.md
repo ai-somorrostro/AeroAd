@@ -37,7 +37,7 @@ AeroAdd/
 
 | Servicio  | Imagen / build         | Puerto (ejemplo, ver `.env`) | Estado |
 |-----------|------------------------|------------------------------|--------|
-| influxdb  | `influxdb:2.7`         | `8086`                       | Base definida, pendiente de configuración (org, bucket, token) |
+| influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Base definida, pendiente de aprovisionamiento |
 | nodered   | `nodered/node-red:4.0.2` | `1880`                     | Base definida, pendiente de flujos |
 | loader    | `build: ./services/loader` | — (sin puerto)             | Pendiente de Dockerfile e implementación |
@@ -71,8 +71,16 @@ docker compose down     # detiene la pila
 
 Nota: `loader` y `mcp` aún no tienen `Dockerfile`, así que `up --build` fallará en esos dos servicios hasta que se implementen. El resto de la pila (InfluxDB, Grafana, Node-RED) arranca con valores de ejemplo.
 
+Para levantar solo InfluxDB (ya listo):
+
+```bash
+cp .env.example .env   # si aún no existe; rellenar a mano usuario, contraseña, org, bucket y token
+docker compose up -d influxdb
+docker compose logs -f influxdb
+```
+
 ## Autores
 
-@IbaiBo \
-@Sendoa6 \
-@3rlaitz
+[Ibai Bonilla](https://github.com/IbaiBo) \
+[Sendoa Perez](https://github.com/Sendoa6) \
+[Erlaitz Alonso](https://github.com/3rlaitz)
