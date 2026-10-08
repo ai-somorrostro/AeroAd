@@ -30,7 +30,7 @@ AeroAdd/
 ├── data/                   # datasets (gitignorados salvo .gitkeep)
 ├── notebooks/              # parte SBD
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
-└── scripts/                # up.sh, down.sh, reset.sh
+└── scripts/                          # create-tokens.sh (tokens InfluxDB); TODO: up.sh, down.sh, reset.sh
 ```
 
 ## Servicios
@@ -58,6 +58,16 @@ Red propia `aeroadd` y volúmenes `influxdb-data`, `grafana-data`, `nodered-data
    cp .env.example .env
    ```
 2. Rellenar a mano en `.env` los valores marcados con TODO: usuarios, contraseñas, organización, bucket, token, URLs y puertos. El archivo `.env` no se sube al repositorio.
+
+### Tokens de InfluxDB (mínimo privilegio)
+
+Con InfluxDB levantado y `.env` relleno (org, bucket y token admin):
+
+```bash
+./scripts/create-tokens.sh
+```
+
+Genera un token de solo lectura para Grafana y dos de solo escritura (Node-RED y loader), y los guarda en `.env` sin duplicar líneas. Es idempotente: si la variable ya tiene valor, no crea otro token. Nunca muestra los valores por pantalla.
 
 ## Cómo lanzarlo
 
