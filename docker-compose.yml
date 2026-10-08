@@ -1,0 +1,121 @@
+# AeroAdd — pila base Big Data + IA (esqueleto).
+# TODO: rellenar a mano puertos, URLs, buckets y credenciales cuando se implemente cada servicio.
+# Toda la configuración real va por variables de entorno definidas en .env (ver .env.example).
+
+name: aeroadd
+
+services:
+  influxdb:
+    image: influxdb:2.7
+    container_name: ${INFLUXDB_CONTAINER_NAME:-aeroadd-influxdb}
+    ports:
+      - "${INFLUXDB_PORT:-8086}:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - ./services/influxdb:/etc/influxdb2:ro # TODO: configuración de InfluxDB
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=${INFLUXDB_INIT_MODE:-setup}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_INIT_USERNAME:-ejemplo-usuario}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_INIT_PASSWORD:-CHANGEME}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG:-ejemplo-org}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET:-ejemplo-bucket}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CHANGEME}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aeroadd
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: ${GRAFANA_CONTAINER_NAME:-aeroadd-grafana}
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./services/grafana/provisioning:/etc/grafana/provisioning:ro # TODO: aprovisionamiento de Grafana
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-ejemplo-usuario}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-CHANGEME}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - aeroadd
+
+  nodered:
+    image: nodered/node-red:4.0.2
+    container_name: ${NODERED_CONTAINER_NAME:-aeroadd-nodered}
+    ports:
+      - "${NODERED_PORT:-1880}:1880"
+    volumes:
+      - nodered-data:/data
+      - ./services/nodered:/data:rw # TODO: flujos y settings de Node-RED
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - aeroadd
+
+  # TODO: requiere Dockerfile en services/loader (pendiente de implementar).
+  loader:
+    build:
+      context: ./services/loader
+    container_name: ${LOADER_CONTAINER_NAME:-aeroadd-loader}
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
+      - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-ejemplo-org}
+      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-ejemplo-bucket}
+      - INFLUXDB_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CHANGEME}
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - aeroadd
+
+  # TODO: requiere Dockerfile en services/mcp (pendiente de implementar).
+  mcp:
+    build:
+      context: ./services/mcp
+    container_name: ${MCP_CONTAINER_NAME:-aeroadd-mcp}
+    ports:
+      - "${MCP_PORT:-8000}:8000" # TODO: rellenar a mano el puerto del servicio MCP
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - aeroadd
+
+networks:
+  aeroadd:
+    driver: bridge
+
+volumes:
+  influxdb-data:
+  grafana-data:
+  nodered-data:
