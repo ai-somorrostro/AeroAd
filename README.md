@@ -13,7 +13,7 @@ AeroAdd/
 ├── AGENTS.md               # instrucciones para opencode
 ├── openspec/               # lo genera openspec
 ├── services/
-│   ├── influxdb/           # scripts de init (buckets, tokens)
+│   ├── influxdb/           # init: 01-create-buckets.sh (buckets de INFLUXDB_EXTRA_BUCKETS)
 │   ├── grafana/
 │   │   └── provisioning/   # datasources, dashboards, usuarios/orgs
 │   ├── nodered/
