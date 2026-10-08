@@ -1,0 +1,8 @@
+{
+  "name": "aeroadd-nodered",
+  "private": true,
+  "description": "Dependencias extra de Node-RED para AeroAdd",
+  "dependencies": {
+    "node-red-contrib-influxdb": "0.7.0"
+  }
+}

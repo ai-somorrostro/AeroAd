@@ -17,10 +17,10 @@ AeroAdd/
 │   ├── grafana/
 │   │   └── provisioning/
 │   │       └── datasources/influxdb.yml  # datasource InfluxDB (Flux) con token de lectura
-│   ├── nodered/
-│   │   ├── Dockerfile
-│   │   ├── settings.js
-│   │   └── flows.json
+│   ├── nodered/                      # imagen propia + flow de prueba
+│   │   ├── Dockerfile                # base fijada + node-red-contrib-influxdb
+│   │   ├── package.json              # dependencia del contrib (versión fijada)
+│   │   └── flows.json                # punto de prueba a Influx (URL/org/token del entorno)
 │   ├── loader/             # python + pandas
 │   │   ├── Dockerfile
 │   │   ├── requirements.txt
@@ -40,7 +40,7 @@ AeroAdd/
 |-----------|------------------------|------------------------------|--------|
 | influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
-| nodered   | `nodered/node-red:4.0.2` | `1880`                     | Base definida, pendiente de flujos |
+| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | Flow de prueba que escribe en Influx con el token de escritura; puerto y token por `.env` |
 | loader    | `build: ./services/loader` | — (sin puerto)             | Pendiente de Dockerfile e implementación |
 | mcp       | `build: ./services/mcp`    | `8000` (ejemplo)           | Pendiente de Dockerfile e implementación |
 
@@ -81,6 +81,14 @@ docker compose down     # detiene la pila
 ```
 
 Nota: `loader` y `mcp` aún no tienen `Dockerfile`, así que `up --build` fallará en esos dos servicios hasta que se implementen. El resto de la pila (InfluxDB, Grafana, Node-RED) arranca con valores de ejemplo.
+
+El `flows.json` de Node-RED va horneado en su imagen: tras modificarlo hay que reconstruir con `docker compose up -d --build nodered`. Si el volumen `nodered-data` ya existía con un flow anterior, además hay que recrearlo (ojo: se pierden sus datos):
+
+```bash
+docker compose stop nodered && docker compose rm -f nodered
+docker volume rm aeroadd_nodered-data
+docker compose up -d nodered
+```
 
 Para levantar solo InfluxDB (ya listo):
 
