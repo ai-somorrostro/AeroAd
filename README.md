@@ -21,13 +21,14 @@ AeroAdd/
 │   │   ├── Dockerfile                # base fijada + node-red-contrib-influxdb
 │   │   ├── package.json              # dependencia del contrib (versión fijada)
 │   │   └── flows.json                # punto de prueba a Influx (URL/org/token del entorno)
-│   ├── loader/             # python + pandas
+│   ├── loader/             # esqueleto: influxdb-client + heartbeat (pandas lo añadirá la ingesta real)
 │   │   ├── Dockerfile
 │   │   ├── requirements.txt
-│   │   └── src/
-│   └── mcp/                # servicio MCP
+│   │   └── src/main.py
+│   └── mcp/                # esqueleto HTTP con /health (MCP real pendiente)
 │       ├── Dockerfile
-│       └── src/
+│       ├── requirements.txt
+│       └── src/server.py
 ├── data/                   # datasets (gitignorados salvo .gitkeep)
 ├── notebooks/              # parte SBD
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
@@ -41,8 +42,8 @@ AeroAdd/
 | influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
 | nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | Flow de prueba que escribe en Influx con el token de escritura; puerto y token por `.env` |
-| loader    | `build: ./services/loader` | — (sin puerto)             | Pendiente de Dockerfile e implementación |
-| mcp       | `build: ./services/mcp`    | `8000` (ejemplo)           | Pendiente de Dockerfile e implementación |
+| loader    | `build: ./services/loader` | — (sin puerto)             | Esqueleto one-shot: heartbeat a Influx; ingesta real pendiente |
+| mcp       | `build: ./services/mcp`    | `8000` (ejemplo)           | Esqueleto HTTP con `/health`; MCP real pendiente |
 
 Red propia `aeroadd` y volúmenes `influxdb-data`, `grafana-data`, `nodered-data`.
 
@@ -70,6 +71,14 @@ Con InfluxDB levantado y `.env` relleno (org, bucket y token admin):
 
 Genera un token de solo lectura para Grafana y dos de solo escritura (Node-RED y loader), y los guarda en `.env` sin duplicar líneas. Es idempotente: si la variable ya tiene valor, no crea otro token. Nunca muestra los valores por pantalla.
 
+Después levanta (o reinicia) el resto para que Grafana recoja su token, ya que el datasource se provisiona al arrancar:
+
+```bash
+docker compose up -d --build
+# si Grafana ya estaba levantada:
+docker compose restart grafana
+```
+
 ## Cómo lanzarlo
 
 ```bash
@@ -80,7 +89,16 @@ docker compose logs -f
 docker compose down     # detiene la pila
 ```
 
-Nota: `loader` y `mcp` aún no tienen `Dockerfile`, así que `up --build` fallará en esos dos servicios hasta que se implementen. El resto de la pila (InfluxDB, Grafana, Node-RED) arranca con valores de ejemplo.
+Nota: `loader` y `mcp` son esqueletos funcionales (heartbeat y `/health`); la ingesta real y el MCP sobre InfluxDB quedan pendientes. Toda la pila arranca con valores de ejemplo.
+
+### Verificar que todo responde
+
+```bash
+curl http://localhost:3000/api/health                          # Grafana
+curl http://localhost:8000/health                               # MCP (esqueleto)
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:1880/ # Node-RED
+docker compose logs loader --tail 5                             # heartbeat a InfluxDB
+```
 
 El `flows.json` de Node-RED va horneado en su imagen: tras modificarlo hay que reconstruir con `docker compose up -d --build nodered`. Si el volumen `nodered-data` ya existía con un flow anterior, además hay que recrearlo (ojo: se pierden sus datos):
 

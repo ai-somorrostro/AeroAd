@@ -89,7 +89,7 @@ services:
     networks:
       - aeroadd
 
-  # TODO: requiere Dockerfile en services/loader (pendiente de implementar).
+  # Esqueleto one-shot: verifica InfluxDB y escribe un heartbeat (services/loader).
   loader:
     build:
       context: ./services/loader
@@ -109,7 +109,7 @@ services:
     networks:
       - aeroadd
 
-  # TODO: requiere Dockerfile en services/mcp (pendiente de implementar).
+  # Esqueleto HTTP con /health en el puerto 8000 (services/mcp).
   mcp:
     build:
       context: ./services/mcp
