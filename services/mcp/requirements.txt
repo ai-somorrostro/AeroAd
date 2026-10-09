@@ -1,0 +1,2 @@
+# Esqueleto MCP: solo stdlib, sin dependencias externas.
+# Cuando se implemente el MCP real (p. ej. influxdb-mcp), fijar aquí las versiones.
