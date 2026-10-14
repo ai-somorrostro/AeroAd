@@ -115,7 +115,7 @@ services:
   # propio) y exige su propio token de llamante; así el agente hereda los permisos
   # del rol y no puede suplantar a otro.
   mcp-direccion:
-    image: grafana/mcp-grafana:v2.0.2
+    image: grafana/mcp-grafana:2.0.2
     container_name: ${MCP_DIRECCION_CONTAINER_NAME:-aeroadd-mcp-direccion}
     entrypoint: ["/app/mcp-grafana"]
     command: &mcp-command
@@ -124,10 +124,14 @@ services:
       - --address
       - 0.0.0.0:8000
       - --enabled-tools
-      - influxdb
+      - influxdb,datasource,dashboard,search,folder,navigation,user
       - --disable-write
       - --enable-query
       - --disable-alerting
+      # Sin esto, el servidor rechaza con 403 todo Host que no sea el puerto
+      # interno (8000): cada instancia se expone en un puerto host distinto.
+      - --allowed-hosts
+      - ${MCP_ALLOWED_HOSTS:-localhost:8000,localhost:8001,localhost:8002,127.0.0.1:8000,127.0.0.1:8001,127.0.0.1:8002,[::1]:8000,[::1]:8001,[::1]:8002}
     ports:
       - "${MCP_DIRECCION_PORT:-8000}:8000"
     volumes:
@@ -146,7 +150,7 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     healthcheck: &mcp-healthcheck
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8000 && printf 'GET /healthz HTTP/1.0\r\n\r\n' >&3 && head -c 12 <&3 | grep -q 200"]
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8000 && printf 'GET /healthz HTTP/1.1\r\nHost: localhost:8000\r\nConnection: close\r\n\r\n' >&3 && head -c 12 <&3 | grep -q 200"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -155,7 +159,7 @@ services:
       - aeroadd
 
   mcp-analisis:
-    image: grafana/mcp-grafana:v2.0.2
+    image: grafana/mcp-grafana:2.0.2
     container_name: ${MCP_ANALISIS_CONTAINER_NAME:-aeroadd-mcp-analisis}
     entrypoint: ["/app/mcp-grafana"]
     command: *mcp-command
@@ -177,7 +181,7 @@ services:
       - aeroadd
 
   mcp-it:
-    image: grafana/mcp-grafana:v2.0.2
+    image: grafana/mcp-grafana:2.0.2
     container_name: ${MCP_IT_CONTAINER_NAME:-aeroadd-mcp-it}
     entrypoint: ["/app/mcp-grafana"]
     command: *mcp-command
@@ -203,6 +207,7 @@ services:
   grafana-sa-init:
     image: curlimages/curl:8.12.1
     container_name: ${GRAFANA_SA_INIT_CONTAINER_NAME:-aeroadd-grafana-sa-init}
+    user: "0:0" # el volumen mcp-secrets nace como root; el MCP (uid 1000) solo lee vía chmod 444
     volumes:
       - mcp-secrets:/shared
       - ./scripts/create-grafana-sa.sh:/scripts/create-grafana-sa.sh:ro

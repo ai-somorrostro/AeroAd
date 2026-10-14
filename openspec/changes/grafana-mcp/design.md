@@ -13,7 +13,7 @@ Estado actual: `mcp` es un build propio (`services/mcp/`: stub Python stdlib con
 `GET /health` en `:8000`, sin dependencias); Grafana 11.2.0 con datasource InfluxDB
 Flux provisionado pero sin `uid`; el token de lectura de InfluxDB ya se genera con
 `scripts/create-tokens.sh`. Referencia oficial consultada: `grafana/mcp-grafana`
-(v2.x, versión a fijar `v2.0.2`; imagen final `debian:bookworm-slim` +
+(v2.x, versión a fijar `2.0.2`; imagen final `debian:bookworm-slim` +
 `ca-certificates`, sin wget/curl, usuario no-root uid 1000, entrypoint por defecto SSE
 en `0.0.0.0:8000`).
 
@@ -129,7 +129,7 @@ la vez: `.gitignore` += `__pycache__/`, `*.pyc` (hay un `.pyc` huérfano en
   el siguiente `up` (idempotente, reutiliza si sigue válido).
 - [Conflicto con `feature/compose-grafana` en `influxdb.yml`] → Mitigación: cambio de
   una línea; al fusionar gana el `uid` fijado aquí.
-- [Tag Docker] → Mitigación: fijar `v2.0.2` (nunca `latest`) y confirmar que existe
+- [Tag Docker] → Mitigación: fijar `2.0.2` (nunca `latest`) y confirmar que existe
   en el registro antes de implementar.
 
 ## Migration Plan
@@ -143,7 +143,7 @@ la vez: `.gitignore` += `__pycache__/`, `*.pyc` (hay un `.pyc` huérfano en
 
 ## Open Questions
 
-- Tag exacto de la imagen a fijar (por defecto `v2.0.2`): confirmar disponibilidad en
+- Tag exacto de la imagen a fijar (por defecto `2.0.2`): confirmar disponibilidad en
   el registro al implementar.
 
 Puertos y volumen ya confirmados: `mcp-direccion`:8000, `mcp-analisis`:8001,

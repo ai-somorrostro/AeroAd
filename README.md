@@ -39,11 +39,14 @@ AeroAdd/
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
 | nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | Flow de prueba que escribe en Influx con el token de escritura; puerto y token por `.env` |
 | loader    | `build: ./services/loader` | — (sin puerto)             | Esqueleto one-shot: heartbeat a Influx; ingesta real pendiente |
-| mcp-direccion | `grafana/mcp-grafana:v2.0.2` | `8000` | MCP oficial; rol **cúpula directiva** (Viewer), service account propia |
-| mcp-analisis  | `grafana/mcp-grafana:v2.0.2` | `8001` | MCP oficial; rol **análisis** (Viewer), service account propia |
-| mcp-it        | `grafana/mcp-grafana:v2.0.2` | `8002` | MCP oficial; rol **IT** (Viewer por ahora), service account propia |
+| mcp-direccion | `grafana/mcp-grafana:2.0.2` | `8000` | MCP oficial; rol **cúpula directiva** (Viewer), service account propia |
+| mcp-analisis  | `grafana/mcp-grafana:2.0.2` | `8001` | MCP oficial; rol **análisis** (Viewer), service account propia |
+| mcp-it        | `grafana/mcp-grafana:2.0.2` | `8002` | MCP oficial; rol **IT** (Viewer por ahora), service account propia |
 
 Red propia `aeroadd` y volúmenes `influxdb-data`, `grafana-data`, `nodered-data`, `mcp-secrets` (tokens de las service accounts).
+
+Nota: la imagen MCP se fija como `grafana/mcp-grafana:2.0.2` (sin `v`). En Docker Hub
+el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0.2`).
 
 ## Requisitos previos
 
