@@ -35,6 +35,7 @@ token_valid() { # $1: token — 200 en /api/user significa válido
 ensure_sa() { # $1: nombre de la SA, $2: fichero de token
   SA_NAME="$1"
   TOKEN_FILE="$2"
+  TOKEN_NAME="mcp-token-$SA_NAME" # único en la organización (Grafana exige unicidad org-wide)
 
   if [ -s "$TOKEN_FILE" ] && token_valid "$(cat "$TOKEN_FILE")" 2>/dev/null; then
     echo "[sa-init] '$SA_NAME': token existente válido, nada que hacer."
@@ -56,7 +57,16 @@ ensure_sa() { # $1: nombre de la SA, $2: fichero de token
   fi
 
   echo "[sa-init] '$SA_NAME': generando token..."
-  TOKEN="$(api POST "/api/serviceaccounts/$SA_ID/tokens" '{"name":"mcp-token"}' \
+  # Limpia tokens previos con el mismo nombre (p. ej. de un intento anterior que
+  # falló después de crear el token) para que el POST no devuelva 400.
+  OLD_IDS="$(api GET "/api/serviceaccounts/$SA_ID/tokens" \
+    | tr '{' '\n' | grep "\"name\":\"$TOKEN_NAME\"" \
+    | grep -o '"id":[0-9]*' | cut -d: -f2 || true)"
+  for OLD_ID in $OLD_IDS; do
+    api DELETE "/api/serviceaccounts/$SA_ID/tokens/$OLD_ID" >/dev/null \
+      && echo "[sa-init] '$SA_NAME': token huérfano previo eliminado."
+  done
+  TOKEN="$(api POST "/api/serviceaccounts/$SA_ID/tokens" "{\"name\":\"$TOKEN_NAME\"}" \
     | grep -o '"key":"[^"]*"' | head -n1 | cut -d'"' -f4)"
   [ -n "$TOKEN" ] || { echo "[sa-init] ERROR: no se pudo generar el token de '$SA_NAME'." >&2; exit 1; }
 

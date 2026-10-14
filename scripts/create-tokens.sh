@@ -79,8 +79,8 @@ ensure_token() { # $1: VAR, $2: descripción, resto: flags de permiso
   echo "[tokens] $var generado y guardado en .env."
 }
 
-ensure_token GRAFANA_INFLUXDB_TOKEN "grafana-read (scripts/create-tokens.sh)" --read-bucket "$BUCKET_ID"
-ensure_token NODERED_INFLUXDB_TOKEN "nodered-write (scripts/create-tokens.sh)" --write-bucket "$BUCKET_ID"
-ensure_token LOADER_INFLUXDB_TOKEN "loader-write (scripts/create-tokens.sh)" --write-bucket "$BUCKET_ID"
+ensure_token GRAFANA_INFLUXDB_TOKEN "grafana-read" --read-bucket "$BUCKET_ID"
+ensure_token NODERED_INFLUXDB_TOKEN "nodered-write" --write-bucket "$BUCKET_ID"
+ensure_token LOADER_INFLUXDB_TOKEN "loader-write" --write-bucket "$BUCKET_ID"
 
 echo "[tokens] Listo."
