@@ -109,22 +109,122 @@ services:
     networks:
       - aeroadd
 
-  # Esqueleto HTTP con /health en el puerto 8000 (services/mcp).
-  mcp:
-    build:
-      context: ./services/mcp
-    container_name: ${MCP_CONTAINER_NAME:-aeroadd-mcp}
+  # Servidores MCP oficiales de Grafana (streamable-http), uno por rol.
+  # Sin build propio. El entrypoint de la imagen arranca en SSE: se sobreescribe.
+  # Cada instancia se autentica con la service account de SU rol (fichero de token
+  # propio) y exige su propio token de llamante; así el agente hereda los permisos
+  # del rol y no puede suplantar a otro.
+  mcp-direccion:
+    image: grafana/mcp-grafana:v2.0.2
+    container_name: ${MCP_DIRECCION_CONTAINER_NAME:-aeroadd-mcp-direccion}
+    entrypoint: ["/app/mcp-grafana"]
+    command: &mcp-command
+      - -t
+      - streamable-http
+      - --address
+      - 0.0.0.0:8000
+      - --enabled-tools
+      - influxdb
+      - --disable-write
+      - --enable-query
+      - --disable-alerting
     ports:
-      - "${MCP_PORT:-8000}:8000" # TODO: rellenar a mano el puerto del servicio MCP
+      - "${MCP_DIRECCION_PORT:-8000}:8000"
+    volumes:
+      - mcp-secrets:/shared:ro
     env_file:
       - path: .env
         required: false
     environment:
-      - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
-    depends_on:
-      influxdb:
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_DIRECCION_TOKEN_FILE:-/shared/sa-direccion-token}
+      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN_DIRECCION:-CAMBIAME} # token de llamante, rellenar a mano
+    depends_on: &mcp-depends
+      grafana:
         condition: service_healthy
+      grafana-sa-init:
+        condition: service_completed_successfully
     restart: unless-stopped
+    healthcheck: &mcp-healthcheck
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8000 && printf 'GET /healthz HTTP/1.0\r\n\r\n' >&3 && head -c 12 <&3 | grep -q 200"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - aeroadd
+
+  mcp-analisis:
+    image: grafana/mcp-grafana:v2.0.2
+    container_name: ${MCP_ANALISIS_CONTAINER_NAME:-aeroadd-mcp-analisis}
+    entrypoint: ["/app/mcp-grafana"]
+    command: *mcp-command
+    ports:
+      - "${MCP_ANALISIS_PORT:-8001}:8000"
+    volumes:
+      - mcp-secrets:/shared:ro
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_ANALISIS_TOKEN_FILE:-/shared/sa-analisis-token}
+      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN_ANALISIS:-CAMBIAME} # token de llamante, rellenar a mano
+    depends_on: *mcp-depends
+    restart: unless-stopped
+    healthcheck: *mcp-healthcheck
+    networks:
+      - aeroadd
+
+  mcp-it:
+    image: grafana/mcp-grafana:v2.0.2
+    container_name: ${MCP_IT_CONTAINER_NAME:-aeroadd-mcp-it}
+    entrypoint: ["/app/mcp-grafana"]
+    command: *mcp-command
+    ports:
+      - "${MCP_IT_PORT:-8002}:8000"
+    volumes:
+      - mcp-secrets:/shared:ro
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_IT_TOKEN_FILE:-/shared/sa-it-token}
+      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN_IT:-CAMBIAME} # token de llamante, rellenar a mano
+    depends_on: *mcp-depends
+    restart: unless-stopped
+    healthcheck: *mcp-healthcheck
+    networks:
+      - aeroadd
+
+  # Init efímero: crea las service accounts Viewer de Grafana (una por rol) y sus
+  # tokens (scripts/create-grafana-sa.sh) en el volumen compartido mcp-secrets.
+  grafana-sa-init:
+    image: curlimages/curl:8.12.1
+    container_name: ${GRAFANA_SA_INIT_CONTAINER_NAME:-aeroadd-grafana-sa-init}
+    volumes:
+      - mcp-secrets:/shared
+      - ./scripts/create-grafana-sa.sh:/scripts/create-grafana-sa.sh:ro
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      - GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER:-ejemplo-usuario}
+      - GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-CHANGEME}
+      - GRAFANA_SA_ROLE=${GRAFANA_SA_ROLE:-Viewer}
+      - GRAFANA_SA_DIRECCION_NAME=${GRAFANA_SA_DIRECCION_NAME:-sa-direccion}
+      - GRAFANA_SA_ANALISIS_NAME=${GRAFANA_SA_ANALISIS_NAME:-sa-analisis}
+      - GRAFANA_SA_IT_NAME=${GRAFANA_SA_IT_NAME:-sa-it}
+      - GRAFANA_SA_DIRECCION_TOKEN_FILE=${GRAFANA_SA_DIRECCION_TOKEN_FILE:-/shared/sa-direccion-token}
+      - GRAFANA_SA_ANALISIS_TOKEN_FILE=${GRAFANA_SA_ANALISIS_TOKEN_FILE:-/shared/sa-analisis-token}
+      - GRAFANA_SA_IT_TOKEN_FILE=${GRAFANA_SA_IT_TOKEN_FILE:-/shared/sa-it-token}
+    entrypoint: ["sh", "/scripts/create-grafana-sa.sh"]
+    depends_on:
+      grafana:
+        condition: service_healthy
+    restart: "no"
     networks:
       - aeroadd
 
@@ -136,3 +236,4 @@ volumes:
   influxdb-data:
   grafana-data:
   nodered-data:
+  mcp-secrets:
