@@ -5,8 +5,8 @@
     "name": "aeropuerto-ventas",
     "namespace": "org-4",
     "uid": "21d7cffe-12d0-4e32-a806-a2f71368bc6c",
-    "resourceVersion": "1791976972909002",
-    "generation": 4,
+    "resourceVersion": "1792063568647992",
+    "generation": 11,
     "creationTimestamp": "2026-10-13T07:12:31Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "421030393929728"
@@ -15,7 +15,7 @@
       "grafana.app/createdBy": "user:bfywpxkf0dw5ca",
       "grafana.app/saved-from-ui": "Grafana v13.2.2 (1bea008f7e)",
       "grafana.app/updatedBy": "user:bfywpxkf0dw5ca",
-      "grafana.app/updatedTimestamp": "2026-10-14T11:22:52Z"
+      "grafana.app/updatedTimestamp": "2026-10-15T11:26:08Z"
     }
   },
   "spec": {
@@ -70,7 +70,7 @@
                   "showLineNumbers": false,
                   "showMiniMap": false
                 },
-                "content": "**Ventas en tiendas y cafeterías del aeropuerto** . Muestran cuánto, dónde y cuándo compran los pasajeros. Las ventas son **independientes** del perfil del pasajero, del tiempo y de los eventos los paneles de abajo comparan la actividad de compra con el resto del contexto.",
+                "content": "**Ventas en tiendas y cafeterías del aeropuerto** . Muestran cuánto, dónde y cuándo compran los pasajeros. Las ventas son **independientes** del perfil del pasajero, del tiempo y de los eventos los paneles de abajo comparan la actividad de compra con el resto del contexto.\n\nUsa el filtro **Tipo de tienda** de arriba para acotar los paneles de ventas. Abajo a la derecha hay estadísticas del ticket (mediana, percentil 95 y desviación típica) y una comparación con el mismo tramo de ayer.",
                 "mode": "markdown"
               },
               "fieldConfig": {
@@ -103,7 +103,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_type\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_type\", \"_value\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_type\", \"_value\"])"
                       }
                     },
                     "refId": "A",
@@ -236,7 +236,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_name\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_name\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
                       }
                     },
                     "refId": "A",
@@ -345,7 +345,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_name\"])\n  |> mean()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_name\"])\n  |> mean()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
                       }
                     },
                     "refId": "A",
@@ -587,7 +587,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> keep(columns: [\"_time\", \"_value\", \"shop_name\", \"shop_type\", \"price_bracket\", \"_field\"])\n  |> rename(columns: {_value: \"total_revenue\"})\n  |> drop(columns: [\"_field\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 10)"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_name\", \"shop_type\", \"price_bracket\", \"_field\"])\n  |> rename(columns: {_value: \"total_revenue\"})\n  |> drop(columns: [\"_field\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 10)"
                       }
                     },
                     "refId": "A",
@@ -662,7 +662,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
                       }
                     },
                     "refId": "A",
@@ -1155,7 +1155,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_type\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_type\", \"_value\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_type\", \"_value\"])"
                       }
                     },
                     "refId": "A",
@@ -1264,6 +1264,158 @@
           }
         }
       },
+      "panel-19": {
+        "kind": "Panel",
+        "spec": {
+          "id": 19,
+          "title": "Estadísticas del ticket (€)",
+          "description": "Mediana, percentil 75 y desviación típica del importe de cada compra en el periodo seleccionado (respeta el filtro de tipo de tienda).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> quantile(q: 0.5)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> quantile(q: 0.75)"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> stddev()"
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "currencyEUR",
+                  "decimals": 2,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Mediana"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "B"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Percentil 75"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Desv. típica"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
       "panel-2": {
         "kind": "Panel",
         "spec": {
@@ -1286,7 +1438,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group()\n  |> count()"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> count()"
                       }
                     },
                     "refId": "A",
@@ -1343,6 +1495,161 @@
           }
         }
       },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "id": 20,
+          "title": "Ingresos: ahora vs mismo tramo de ayer",
+          "description": "Compara los ingresos por 10 minutos del periodo seleccionado con el mismo periodo 24 horas antes.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 10m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "import \"date\"\n\nfrom(bucket: \"captaciones_tiemporeal\")\n  |> range(start: date.sub(d: 1d, from: v.timeRangeStart), stop: date.sub(d: 1d, from: v.timeRangeStop))\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 10m, fn: sum, createEmpty: false)\n  |> timeShift(duration: 1d)\n  |> keep(columns: [\"_time\", \"_value\"])"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.2.2",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "currencyEUR",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 15,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": true,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Ahora (€/10 min)"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "B"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Mismo tramo de ayer (€/10 min)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
       "panel-3": {
         "kind": "Panel",
         "spec": {
@@ -1365,7 +1672,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group()\n  |> sum()"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> sum()"
                       }
                     },
                     "refId": "A",
@@ -1444,7 +1751,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group()\n  |> mean()"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> mean()"
                       }
                     },
                     "refId": "A",
@@ -1523,7 +1830,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"items_sold\")\n  |> group()\n  |> sum()"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"items_sold\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> sum()"
                       }
                     },
                     "refId": "A",
@@ -1602,7 +1909,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group()\n  |> sum()"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> sum()"
                       }
                     },
                     "refId": "A",
@@ -1681,7 +1988,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_name\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_name\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
                       }
                     },
                     "refId": "A",
@@ -1759,7 +2066,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_type\"])\n  |> aggregateWindow(every: 1m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_type\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> aggregateWindow(every: 1m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_type\"])"
                       }
                     },
                     "refId": "A",
@@ -1918,7 +2225,7 @@
                         "name": "cg0em94u46vb4e"
                       },
                       "spec": {
-                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> group(columns: [\"shop_type\"])\n  |> aggregateWindow(every: 1m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_type\"])"
+                        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> aggregateWindow(every: 1m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_type\"])"
                       }
                     },
                     "refId": "A",
@@ -2293,11 +2600,74 @@
                 "name": "panel-15"
               }
             }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 8,
+              "y": 41,
+              "width": 16,
+              "height": 4,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-19"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 8,
+              "y": 45,
+              "width": 16,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-20"
+              }
+            }
           }
         ]
       }
     },
-    "links": [],
+    "links": [
+      {
+        "title": "Oportunidades publicitarias",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "url": "/d/aero-airlabs-free-cobertura-v2",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": false
+      },
+      {
+        "title": "Análisis de clientes",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "url": "/d/aeropuerto-analisis-clientes",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": false
+      },
+      {
+        "title": "Monitorización en tiempo real",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "url": "/d/aeropuerto-monitor-rt",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": false
+      }
+    ],
     "liveNow": false,
     "preload": false,
     "tags": [],
@@ -2322,6 +2692,42 @@
       "fiscalYearStartMonth": 0
     },
     "title": "Ventas del aeropuerto",
-    "variables": []
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "tipo_tienda",
+          "current": {
+            "text": "All",
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Tipo de tienda",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "influxdb",
+            "version": "v0",
+            "datasource": {
+              "name": "cg0em94u46vb4e"
+            },
+            "spec": {
+              "__legacyStringValue": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"ventas\")\n  |> filter(fn: (r) => exists r.shop_type)\n  |> keep(columns: [\"shop_type\"])\n  |> group()\n  |> distinct(column: \"shop_type\")"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "alphabeticalAsc",
+          "definition": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"ventas\")\n  |> filter(fn: (r) => exists r.shop_type)\n  |> keep(columns: [\"shop_type\"])\n  |> group()\n  |> distinct(column: \"shop_type\")",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false
+        }
+      }
+    ]
   }
 }
