@@ -1,0 +1,2037 @@
+{
+  "title": "Oportunidades publicitarias ",
+  "uid": "oportunidades-publicitarias",
+  "description": "GENERADO desde BDA/Dashboards/OportunidadesPublicitariasGrafana.json (formato API v2) - no editar a mano, se regenera.",
+  "tags": [],
+  "timezone": "Europe/Madrid",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "version": 1,
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Objetivo del panel",
+      "description": "",
+      "type": "text",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## ¿Qué oportunidad publicitaria existe ahora?\nCombina **el tiempo en Madrid-Barajas**, **una muestra de horarios de llegadas consultada a AirLabs** y **la actividad WiFi**. El panel diferencia entre un recuento igual a cero y los intervalos sin cobertura suficiente. La cuota gratuita limita las páginas consultadas, por lo que los horarios no son un listado exhaustivo del aeropuerto.",
+        "mode": "markdown"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": []
+    },
+    {
+      "id": 2,
+      "title": "Promocionar paraguas",
+      "description": "Activa si está lloviendo o la probabilidad de lluvia en las próximas 3 h alcanza el 50 %.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {
+          "valueSize": 28
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "NO",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "SÍ",
+                  "color": "blue",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 1,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"promocionar_paraguas\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Promocionar hoteles · según cobertura",
+      "description": "Recomendación hotelera solo cuando la muestra da cobertura completa a la próxima hora; si no hay cobertura, indica SIN DATOS.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {
+          "valueSize": 28
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "-1": {
+                  "text": "SIN DATOS",
+                  "color": "orange",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "NO",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "SÍ",
+                  "color": "purple",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 1,
+                "color": "purple"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and (r._field == \"llegadas_proxima_hora\" or r._field == \"cobertura_proxima_hora\"))\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"_time\"])\n  |> tail(n: 1)\n  |> map(fn: (r) => ({_time: r._time, _value: if r.cobertura_proxima_hora != 1.0 then -1.0 else if r.llegadas_proxima_hora >= 38.0 then 1.0 else 0.0}))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Llegadas en la próxima hora · cobertura real",
+      "description": "Llegadas de la próxima hora solo si las páginas consultadas cubren ese intervalo completo; SIN DATOS no significa cero vuelos.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {
+          "valueSize": 28
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "-1": {
+                  "text": "SIN DATOS",
+                  "color": "orange",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              },
+              {
+                "value": 38,
+                "color": "purple"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and (r._field == \"llegadas_proxima_hora\" or r._field == \"cobertura_proxima_hora\"))\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"_time\"])\n  |> tail(n: 1)\n  |> map(fn: (r) => ({_time: r._time, _value: if r.cobertura_proxima_hora == 1.0 then r.llegadas_proxima_hora else -1.0}))"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Condición meteorológica",
+      "description": "Código meteorológico actual de Open-Meteo.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {
+          "valueSize": 28
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Despejado",
+                  "color": "yellow",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 1,
+                "to": 2,
+                "result": {
+                  "text": "Parcialmente nublado",
+                  "color": "light-blue",
+                  "index": 1
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "3": {
+                  "text": "Nublado",
+                  "color": "#8e9aaf",
+                  "index": 2
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 45,
+                "to": 48,
+                "result": {
+                  "text": "Niebla",
+                  "color": "#8e9aaf",
+                  "index": 3
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 51,
+                "to": 57,
+                "result": {
+                  "text": "Llovizna",
+                  "color": "blue",
+                  "index": 4
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 61,
+                "to": 67,
+                "result": {
+                  "text": "Lluvia",
+                  "color": "blue",
+                  "index": 5
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 71,
+                "to": 77,
+                "result": {
+                  "text": "Nieve",
+                  "color": "super-light-blue",
+                  "index": 6
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 80,
+                "to": 82,
+                "result": {
+                  "text": "Chubascos",
+                  "color": "dark-blue",
+                  "index": 7
+                }
+              }
+            },
+            {
+              "type": "range",
+              "options": {
+                "from": 95,
+                "to": 99,
+                "result": {
+                  "text": "Tormenta",
+                  "color": "red",
+                  "index": 8
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"codigo_tiempo\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Temperatura actual",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              },
+              {
+                "value": 12,
+                "color": "green"
+              },
+              {
+                "value": 28,
+                "color": "orange"
+              },
+              {
+                "value": 35,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"temperatura\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Probabilidad de lluvia (3 h)",
+      "description": "",
+      "type": "gauge",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 8,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": false
+        },
+        "endpointMarker": "point",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "sparkline": false,
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 30,
+                "color": "orange"
+              },
+              {
+                "value": 50,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"prob_lluvia_3h\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Precipitación actual",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 8,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthmm",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 0.1,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"precipitacion\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Llegadas detectadas · próximas 3 h (si hay cobertura)",
+      "description": "Muestra solo el recuento cuando las páginas consultadas cubren las próximas 3 horas; de lo contrario indica SIN DATOS.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "-1": {
+                  "text": "SIN DATOS",
+                  "color": "orange",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "purple"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and (r._field == \"llegadas_proxima_hora\" or r._field == \"cobertura_proxima_hora\"))\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"_time\"])\n  |> tail(n: 1)\n  |> map(fn: (r) => ({_time: r._time, _value: if r.cobertura_proxima_hora == 1.0 then r.llegadas_proxima_hora else -1.0}))"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Retrasadas · muestra consultada",
+      "description": "Vuelos consultados estimados con al menos 15 minutos de retraso, dentro de la próxima hora cuando hay cobertura.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 8,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 8,
+                "color": "orange"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and r._field == \"retrasadas_proxima_hora\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Canceladas en la muestra",
+      "description": "Cancelaciones entre los registros consultados, no el total oficial del día.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 8,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "text"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and r._field == \"canceladas_hoy\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Evolución de lluvia",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 12,
+        "h": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Probabilidad de lluvia (%)"
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Precipitación (mm)"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "lengthmm"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"prob_lluvia_3h\")\n  |> group()\n  |> keep(columns: [\"_time\", \"_value\"])"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"precipitacion\")\n  |> group()\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Evolución de temperatura",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 13,
+        "w": 12,
+        "h": 7
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Temperatura (°C)"
+              },
+              {
+                "id": "unit",
+                "value": "celsius"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"temperatura\")\n  |> group()\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Llegadas por hora · cobertura disponible (horizonte máx. 12 h)",
+      "description": "Horas con cobertura de la muestra consultada. Las horas ausentes no deben interpretarse como cero llegadas.",
+      "type": "barchart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "hora",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "data = from(bucket: \"contexto_madrid\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas_hora\" and r._field == \"llegadas\" and r.pipeline == \"airlabs_free_v2\")\n  |> keep(columns: [\"_time\", \"_value\", \"hora\", \"orden\"])\n\nt = data\n  |> group()\n  |> max(column: \"_time\")\n  |> findRecord(fn: (key) => true, idx: 0)\n\ndata\n  |> filter(fn: (r) => r._time == t._time)\n  |> group()\n  |> sort(columns: [\"orden\"])\n  |> keep(columns: [\"hora\", \"_value\"])\n  |> rename(columns: {_value: \"Llegadas\"})"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Llegadas de la próxima hora · solo cuando hay cobertura",
+      "description": "Muestra una serie solo para instantes con cobertura de los horarios consultados. Sin línea no significa que no lleguen vuelos.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "Llegadas próxima hora",
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and (r._field == \"llegadas_proxima_hora\" or r._field == \"cobertura_proxima_hora\"))\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.cobertura_proxima_hora == 1)\n  |> keep(columns: [\"_time\", \"llegadas_proxima_hora\"])\n  |> rename(columns: {llegadas_proxima_hora: \"_value\"})"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Próximas llegadas encontradas · muestra AirLabs",
+      "description": "Muestra vuelos futuros encontrados en las páginas consultadas; la tabla es una muestra, no el horario completo.",
+      "type": "table",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 9
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vuelo"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Vuelo"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "origen"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Origen"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "estado"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Estado"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "eta_min"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Llega en (min)"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "retraso_min"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Retraso (min)"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "base = from(bucket: \"contexto_madrid\")\n  |> range(start: -10m)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas_proximas\" and r.pipeline == \"airlabs_free_v2\")\n\nt = base\n  |> filter(fn: (r) => r._field == \"eta_min\")\n  |> group()\n  |> max(column: \"_time\")\n  |> findRecord(fn: (key) => true, idx: 0)\n\nbase\n  |> filter(fn: (r) => r._time == t._time)\n  |> pivot(rowKey: [\"_time\", \"orden\", \"vuelo\", \"origen\", \"estado\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"orden\"])\n  |> keep(columns: [\"vuelo\", \"origen\", \"estado\", \"eta_min\", \"retraso_min\"])"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Llegadas consultadas vs actividad WiFi",
+      "description": "Compara las llegadas consultadas (solo cuando hay cobertura) con las captaciones WiFi. La muestra de AirLabs no es un calendario exhaustivo.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 9
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Llegadas próxima hora"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Captaciones WiFi (10 min)"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and (r._field == \"llegadas_proxima_hora\" or r._field == \"cobertura_proxima_hora\"))\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.cobertura_proxima_hora == 1)\n  |> keep(columns: [\"_time\", \"llegadas_proxima_hora\"])\n  |> rename(columns: {llegadas_proxima_hora: \"_value\"})"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"captaciones\" and r._field == \"edad\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Actividad del aeropuerto · captaciones por 10 min",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 16,
+        "h": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "Captaciones (10 min)",
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"captaciones\" and r._field == \"edad\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Captaciones última hora",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 37,
+        "w": 8,
+        "h": 4
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"captaciones\" and r._field == \"edad\")\n  |> group()\n  |> count()"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Máximo de captaciones / 10 min",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 41,
+        "w": 8,
+        "h": 4
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"captaciones\" and r._field == \"edad\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> group()\n  |> max()"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Estado de la consulta AirLabs",
+      "description": "1 = la última consulta fue correcta; 0 = falló la consulta o los datos están caducados. Un estado OK no garantiza que haya cobertura para todas las horas.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 6,
+        "h": 4
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "NO",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "red"
+              },
+              {
+                "value": 1,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and r._field == \"api_ok\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Registros de vuelos consultados",
+      "description": "Número de filas recibidas de las páginas consultadas en la última actualización (incluye códigos compartidos antes de deduplicar).",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 45,
+        "w": 6,
+        "h": 4
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and r._field == \"vuelos_recibidos\")\n  |> group()\n  |> last()"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Antigüedad de los datos (min)",
+      "description": "Minutos desde la última consulta correcta. Datos de más de 4 horas se consideran caducados para el cálculo.",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 45,
+        "w": 6,
+        "h": 4
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 200,
+                "color": "orange"
+              },
+              {
+                "value": 400,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"llegadas_barajas\" and r.pipeline == \"airlabs_free_v2\" and r._field == \"antiguedad_datos_min\")\n  |> group()\n  |> last()"
+        }
+      ]
+    }
+  ]
+}

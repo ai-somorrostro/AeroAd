@@ -1,0 +1,1973 @@
+{
+  "title": "Ventas del aeropuerto",
+  "uid": "ventas-aeropuerto",
+  "description": "GENERADO desde BDA/Dashboards/VentasAeropuerto.json (formato API v2) - no editar a mano, se regenera.",
+  "tags": [],
+  "timezone": "Europe/Madrid",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "version": 1,
+  "templating": {
+    "list": [
+      {
+        "name": "tipo_tienda",
+        "label": "Tipo de tienda",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "aeroadd-influxdb"
+        },
+        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"ventas\")\n  |> filter(fn: (r) => exists r.shop_type)\n  |> keep(columns: [\"shop_type\"])\n  |> group()\n  |> distinct(column: \"shop_type\")",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Sobre este panel",
+      "description": "",
+      "type": "text",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "**Ventas en tiendas y cafeterías del aeropuerto** . Muestran cuánto, dónde y cuándo compran los pasajeros. Las ventas son **independientes** del perfil del pasajero, del tiempo y de los eventos los paneles de abajo comparan la actividad de compra con el resto del contexto.\n\nUsa el filtro **Tipo de tienda** de arriba para acotar los paneles de ventas. Abajo a la derecha hay estadísticas del ticket (mediana, percentil 95 y desviación típica) y una comparación con el mismo tramo de ayer.",
+        "mode": "markdown"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": []
+    },
+    {
+      "id": 2,
+      "title": "Compras",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> count()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Ingresos (€)",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> sum()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Ticket medio (€)",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Unidades vendidas",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"items_sold\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> sum()"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Ingresos últimos 5 min (€)",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> sum()"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Tienda con más ingresos",
+      "description": "Tienda líder en ingresos en el periodo",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^shop_name$/",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_name\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Compras por minuto según tipo de tienda",
+      "description": "Una serie por tipo: souvenir, artículos de viaje y cafetería",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.shop_type}",
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "souvenir"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "travel_necessity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "coffee"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> aggregateWindow(every: 1m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_type\"])"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Ingresos por minuto (€)",
+      "description": "Ingresos por minuto separados por tipo de tienda",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.shop_type}",
+          "unit": "currencyEUR",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "souvenir"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "travel_necessity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "coffee"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> aggregateWindow(every: 1m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_type\"])"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Ventas por tipo de tienda",
+      "description": "",
+      "type": "piechart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic",
+            "fixedColor": "#73BF69"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "souvenir"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "travel_necessity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "coffee"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_type\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Ingresos por tienda (€)",
+      "description": "",
+      "type": "barchart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#8e9aaf"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_name\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Ticket medio por tienda (€)",
+      "description": "",
+      "type": "barchart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "groupWidth": 0.8,
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#8e9aaf"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_name\"])\n  |> mean()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_name\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Ingresos por tipo de tienda",
+      "description": "",
+      "type": "piechart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^_value$/",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic",
+            "fixedColor": "#73BF69"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "souvenir"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "travel_necessity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "coffee"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group(columns: [\"shop_type\"])\n  |> sum()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> keep(columns: [\"shop_type\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Últimas 10 compras",
+      "description": "",
+      "type": "table",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 24,
+        "w": 16,
+        "h": 8
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> keep(columns: [\"_time\", \"_value\", \"shop_name\", \"shop_type\", \"price_bracket\", \"_field\"])\n  |> rename(columns: {_value: \"total_revenue\"})\n  |> drop(columns: [\"_field\"])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 10)"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Souvenirs: ingresos por gama de precio",
+      "description": "",
+      "type": "piechart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 8,
+        "h": 9
+      },
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^_value$/",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic",
+            "fixedColor": "#73BF69"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "budget"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mid-range"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "premium"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type == \"souvenir\")\n  |> group(columns: [\"price_bracket\"])\n  |> sum()\n  |> group()\n  |> keep(columns: [\"price_bracket\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Cafeterías vs temperatura",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 32,
+        "w": 8,
+        "h": 9
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ingresos cafeterías (€/10 min)"
+              },
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Temperatura (°C)"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "celsius"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\" and r.shop_type == \"coffee\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"temperatura\")\n  |> group()\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Artículos de viaje vs probabilidad de lluvia",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 32,
+        "w": 8,
+        "h": 9
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ingresos artículos de viaje (€/10 min)"
+              },
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Prob. lluvia (%)"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\" and r.shop_type == \"travel_necessity\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"contexto_madrid\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"tiempo_madrid\" and r._field == \"prob_lluvia_3h\")\n  |> group()\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Compras vs actividad wifi",
+      "description": "Las compras y las conexiones wifi se concentran en las mismas horas punta",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 8,
+        "h": 9
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Compras (10 min)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Captaciones wifi (10 min)"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"captaciones\" and r._field == \"edad\")\n  |> group()\n  |> aggregateWindow(every: 10m, fn: count, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Estadísticas del ticket (€)",
+      "description": "Mediana, percentil 75 y desviación típica del importe de cada compra en el periodo seleccionado (respeta el filtro de tipo de tienda).",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 41,
+        "w": 16,
+        "h": 4
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Mediana"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Percentil 75"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Desv. típica"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> quantile(q: 0.5)"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> quantile(q: 0.75)"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> stddev()"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Ingresos: ahora vs mismo tramo de ayer",
+      "description": "Compara los ingresos por 10 minutos del periodo seleccionado con el mismo periodo 24 horas antes.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 45,
+        "w": 16,
+        "h": 5
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ahora (€/10 min)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Mismo tramo de ayer (€/10 min)"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 10m, fn: sum, createEmpty: false)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "import \"date\"\n\nfrom(bucket: \"captaciones_tiemporeal\")\n  |> range(start: date.sub(d: 1d, from: v.timeRangeStart), stop: date.sub(d: 1d, from: v.timeRangeStop))\n  |> filter(fn: (r) => r._measurement == \"ventas\" and r._field == \"total_revenue\")\n  |> filter(fn: (r) => r.shop_type =~ /^${tipo_tienda:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 10m, fn: sum, createEmpty: false)\n  |> timeShift(duration: 1d)\n  |> keep(columns: [\"_time\", \"_value\"])"
+        }
+      ]
+    }
+  ]
+}
