@@ -5,12 +5,12 @@
   "tags": [],
   "timezone": "Europe/Madrid",
   "time": {
-    "from": "2026-06-01T00:00:00.000Z",
-    "to": "2026-07-01T00:00:00.000Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "refresh": "10s",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "templating": {
     "list": [
       {

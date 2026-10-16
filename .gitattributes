@@ -1,0 +1,4 @@
+# Normalizar finales de línea al clonar: los scripts .sh se ejecutan dentro de
+# contenedores Linux y un CRLF los rompe (el init de InfluxDB entra en bucle).
+*.sh text eol=lf
+.env.example text eol=lf
