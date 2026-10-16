@@ -21,7 +21,7 @@
           "type": "influxdb",
           "uid": "aeroadd-influxdb"
         },
-        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.pais)\n  |> keep(columns: [\"pais\"])\n  |> group()\n  |> distinct(column: \"pais\")",
+        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.pais)\n  |> keep(columns: [\"pais\"])\n  |> group()\n  |> distinct(column: \"pais\")",
         "refresh": 1,
         "sort": 1,
         "includeAll": true,
@@ -46,7 +46,7 @@
           "type": "influxdb",
           "uid": "aeroadd-influxdb"
         },
-        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.rango_edad)\n  |> keep(columns: [\"rango_edad\"])\n  |> group()\n  |> distinct(column: \"rango_edad\")",
+        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.rango_edad)\n  |> keep(columns: [\"rango_edad\"])\n  |> group()\n  |> distinct(column: \"rango_edad\")",
         "refresh": 1,
         "sort": 1,
         "includeAll": true,
@@ -71,7 +71,7 @@
           "type": "influxdb",
           "uid": "aeroadd-influxdb"
         },
-        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.idioma)\n  |> keep(columns: [\"idioma\"])\n  |> group()\n  |> distinct(column: \"idioma\")",
+        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.idioma)\n  |> keep(columns: [\"idioma\"])\n  |> group()\n  |> distinct(column: \"idioma\")",
         "refresh": 1,
         "sort": 1,
         "includeAll": true,
@@ -96,7 +96,7 @@
           "type": "influxdb",
           "uid": "aeroadd-influxdb"
         },
-        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.os)\n  |> keep(columns: [\"os\"])\n  |> group()\n  |> distinct(column: \"os\")",
+        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.os)\n  |> keep(columns: [\"os\"])\n  |> group()\n  |> distinct(column: \"os\")",
         "refresh": 1,
         "sort": 1,
         "includeAll": true,
@@ -195,7 +195,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> count()"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> count()"
         }
       ]
     },
@@ -253,7 +253,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)\n  |> group()\n  |> mean()"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)\n  |> group()\n  |> mean()"
         }
       ]
     },
@@ -310,7 +310,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)"
         }
       ]
     },
@@ -368,7 +368,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> mean()"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> mean()"
         }
       ]
     },
@@ -422,7 +422,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)"
         }
       ]
     },
@@ -476,7 +476,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1d, fn: count, createEmpty: false)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1d, fn: count, createEmpty: false)"
         }
       ]
     },
@@ -527,7 +527,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
         }
       ]
     },
@@ -586,7 +586,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"rango_edad\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"rango_edad\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
         }
       ]
     },
@@ -645,7 +645,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"os\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"os\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
         }
       ]
     },
@@ -696,7 +696,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"idioma\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"idioma\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
         }
       ]
     },
@@ -747,7 +747,7 @@
             "type": "influxdb",
             "uid": "aeroadd-influxdb"
           },
-          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"fabricante\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+          "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"fabricante\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
         }
       ]
     }
