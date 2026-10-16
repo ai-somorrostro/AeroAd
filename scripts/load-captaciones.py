@@ -23,7 +23,10 @@ CSV = os.environ.get("CSV", "BDA/ImporCsvPandas/captaciones_junio_2026.csv")
 INFLUX_URL = os.environ.get("INFLUX_URL", "http://localhost:8086")
 INFLUX_TOKEN = os.environ.get("INFLUX_TOKEN", "")
 INFLUX_ORG = os.environ.get("INFLUXDB_INIT_ORG", "ejemplo-org")
-INFLUX_BUCKET = os.environ.get("INFLUX_BUCKET", "captaciones_tiemporeal")
+# Bucket destino del CSV segun la arquitectura del equipo:
+# captaciones_julio (CSV vía pandas), captaciones_tiemporeal (Node-RED),
+# contexto_madrid (APIs vía Node-RED), dataset_integrado (integración).
+INFLUX_BUCKET = os.environ.get("INFLUX_BUCKET", "captaciones_julio")
 MEASUREMENT = "captaciones"
 ZONA_HORARIA = "Europe/Madrid"  # las horas del CSV son hora local
 TAMANO_LOTE = 10_000

@@ -5,8 +5,8 @@
   "tags": [],
   "timezone": "Europe/Madrid",
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2026-06-01T00:00:00.000Z",
+    "to": "2026-07-01T00:00:00.000Z"
   },
   "refresh": "10s",
   "schemaVersion": 39,
