@@ -1,0 +1,1212 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "aeropuerto-analisis-clientes",
+    "namespace": "org-4",
+    "uid": "b6222106-db14-4746-9724-cc1c06035ea7",
+    "resourceVersion": "1791534300616014",
+    "generation": 1,
+    "creationTimestamp": "2026-10-09T08:25:00Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "382466889211904"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:bfywpxkf0dw5ca",
+      "grafana.app/saved-from-ui": "Grafana v13.2.2 (1bea008f7e)"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true,
+          "legacyOptions": {
+            "type": "dashboard"
+          }
+        }
+      }
+    ],
+    "cursorSync": "Crosshair",
+    "description": "Análisis de los clientes del aeropuerto",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Sobre este panel",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "",
+            "spec": {
+              "options": {
+                "content": "**Análisis de los clientes del aeropuerto (junio 2026).** Perfil de los pasajeros conectados a la wifi: cuántos son, de dónde vienen, qué edad y qué dispositivo tienen. Los filtros de arriba (país, rango de edad, idioma y sistema operativo) afectan a todos los paneles salvo al país con más captaciones.",
+                "mode": "markdown"
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Captaciones por sistema operativo",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"os\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "piechart",
+            "version": "",
+            "spec": {
+              "options": {
+                "displayLabels": [
+                  "percent"
+                ],
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "values": [
+                    "value",
+                    "percent"
+                  ]
+                },
+                "pieType": "pie",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/^_value$/",
+                  "values": true
+                },
+                "tooltip": {
+                  "mode": "single"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Captaciones por idioma",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"idioma\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "",
+            "spec": {
+              "options": {
+                "barWidth": 0.8,
+                "groupWidth": 0.8,
+                "legend": {
+                  "displayMode": "hidden",
+                  "showLegend": false
+                },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "tooltip": {
+                  "mode": "single"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "fillOpacity": 80
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Captaciones por fabricante",
+          "description": "Fabricante del dispositivo; depende del sistema operativo",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"fabricante\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "",
+            "spec": {
+              "options": {
+                "barWidth": 0.8,
+                "groupWidth": 0.8,
+                "legend": {
+                  "displayMode": "hidden",
+                  "showLegend": false
+                },
+                "orientation": "vertical",
+                "showValue": "auto",
+                "tooltip": {
+                  "mode": "single"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "fillOpacity": 80
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Total de captaciones",
+          "description": "Número total de captaciones según los filtros seleccionados",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> count()"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Media de captaciones por hora",
+          "description": "Media de captaciones por hora en el periodo",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)\n  |> group()\n  |> mean()"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "País con mas captaciones",
+          "description": "País de origen con más captaciones (sin filtros)",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/^pais$/",
+                  "values": true
+                },
+                "textMode": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Edad media de los usuarios",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> mean()"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "suffix: años",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Captaciones por hora",
+          "description": "Captaciones por hora; destacan las franjas punta de mañana y tarde",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Captaciones",
+                  "unit": "none",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 15,
+                    "lineWidth": 2,
+                    "showPoints": "auto",
+                    "spanNulls": true
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Captaciones por dia",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1d, fn: count, createEmpty: false)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Captaciones",
+                  "unit": "none",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "bars",
+                    "fillOpacity": 60,
+                    "lineWidth": 2,
+                    "showPoints": "auto",
+                    "spanNulls": true
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Captaciones por pais",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "",
+            "spec": {
+              "options": {
+                "barWidth": 0.8,
+                "groupWidth": 0.8,
+                "legend": {
+                  "displayMode": "hidden",
+                  "showLegend": false
+                },
+                "orientation": "vertical",
+                "showValue": "auto",
+                "tooltip": {
+                  "mode": "single"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "fillOpacity": 80
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Captaciones por rango de edad",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "cg0em94u46vb4e"
+                      },
+                      "spec": {
+                        "query": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"rango_edad\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "piechart",
+            "version": "",
+            "spec": {
+              "options": {
+                "displayLabels": [
+                  "percent"
+                ],
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "values": [
+                    "value",
+                    "percent"
+                  ]
+                },
+                "pieType": "pie",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/^_value$/",
+                  "values": true
+                },
+                "tooltip": {
+                  "mode": "single"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 3,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 3,
+              "width": 6,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-4"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 18,
+              "y": 3,
+              "width": 6,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-5"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 8,
+              "width": 24,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-6"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 16,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-7"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 16,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-8"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 24,
+              "width": 8,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-9"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 8,
+              "y": 24,
+              "width": 8,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-10"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 16,
+              "y": 24,
+              "width": 8,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-11"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 32,
+              "width": 24,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-12"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "Europe/Madrid",
+      "from": "2026-05-31T22:00:00.000Z",
+      "to": "2026-06-30T22:00:00.000Z",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": true,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Análisis de clientes",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "pais",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "País",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "influxdb",
+            "version": "v0",
+            "datasource": {
+              "name": "cg0em94u46vb4e"
+            },
+            "spec": {
+              "__legacyStringValue": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.pais)\n  |> keep(columns: [\"pais\"])\n  |> group()\n  |> distinct(column: \"pais\")"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.pais)\n  |> keep(columns: [\"pais\"])\n  |> group()\n  |> distinct(column: \"pais\")",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "rango_edad",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Rango de edad",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "influxdb",
+            "version": "v0",
+            "datasource": {
+              "name": "cg0em94u46vb4e"
+            },
+            "spec": {
+              "__legacyStringValue": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.rango_edad)\n  |> keep(columns: [\"rango_edad\"])\n  |> group()\n  |> distinct(column: \"rango_edad\")"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.rango_edad)\n  |> keep(columns: [\"rango_edad\"])\n  |> group()\n  |> distinct(column: \"rango_edad\")",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "idioma",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Idioma",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "influxdb",
+            "version": "v0",
+            "datasource": {
+              "name": "cg0em94u46vb4e"
+            },
+            "spec": {
+              "__legacyStringValue": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.idioma)\n  |> keep(columns: [\"idioma\"])\n  |> group()\n  |> distinct(column: \"idioma\")"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.idioma)\n  |> keep(columns: [\"idioma\"])\n  |> group()\n  |> distinct(column: \"idioma\")",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "os",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Sistema Operativo",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "influxdb",
+            "version": "v0",
+            "datasource": {
+              "name": "cg0em94u46vb4e"
+            },
+            "spec": {
+              "__legacyStringValue": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.os)\n  |> keep(columns: [\"os\"])\n  |> group()\n  |> distinct(column: \"os\")"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "from(bucket: \"captaciones_julio\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.os)\n  |> keep(columns: [\"os\"])\n  |> group()\n  |> distinct(column: \"os\")",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false
+        }
+      }
+    ]
+  }
+}
