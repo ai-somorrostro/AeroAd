@@ -229,7 +229,6 @@ nodered-data/
 .opencode/
 *.log
 
-<<<<<<< HEAD
 # C extensions
 *.so
 
