@@ -1,5 +1,695 @@
 [
   {
+    "id": "tab_sim",
+    "type": "tab",
+    "label": "1 · Captaciones tiempo real",
+    "disabled": false,
+    "info": "Simula captaciones wifi, las valida y las sube a captaciones_tiemporeal"
+  },
+  {
+    "id": "c1",
+    "type": "comment",
+    "z": "tab_sim",
+    "name": "Simulador de captaciones wifi",
+    "info": "Genera captaciones nuevas cada 3 s (más en hora punta), descarta las erróneas y sube las buenas a InfluxDB.",
+    "x": 200,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "sim_inj",
+    "type": "inject",
+    "z": "tab_sim",
+    "name": "cada 3 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "3",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "sim_gen"
+      ]
+    ]
+  },
+  {
+    "id": "sim_gen",
+    "type": "function",
+    "z": "tab_sim",
+    "name": "generar captaciones",
+    "func": "// Simulador de captaciones wifi (misma lógica que generador2.py)\nconst D = {\"FABRICANTES\": {\"Apple\": {\"peso\": 18, \"prefijos\": [\"3C:06:30\", \"3C:07:54\", \"3C:15:C2\", \"3C:22:FB\", \"3C:34:64\"]}, \"Samsung\": {\"peso\": 16, \"prefijos\": [\"00:16:32\", \"00:21:19\", \"00:24:54\", \"08:08:C2\", \"10:D5:42\"]}, \"Intel\": {\"peso\": 15, \"prefijos\": [\"DC:21:48\", \"00:1B:21\", \"00:1C:BF\", \"00:1C:C0\", \"3C:E9:F7\"]}, \"Lenovo\": {\"peso\": 9, \"prefijos\": [\"00:09:2D\", \"00:0A:F7\", \"28:D2:44\", \"54:EE:75\", \"98:FA:E3\"]}, \"HP\": {\"peso\": 8, \"prefijos\": [\"00:1A:4B\", \"00:21:5A\", \"3C:4A:92\", \"64:51:06\", \"84:34:97\"]}, \"Dell\": {\"peso\": 7, \"prefijos\": [\"00:14:22\", \"00:1E:4F\", \"18:03:73\", \"34:17:EB\", \"B0:83:FE\"]}, \"ASUS\": {\"peso\": 6, \"prefijos\": [\"00:0C:6E\", \"00:1A:92\", \"2C:56:DC\", \"30:5A:3A\", \"AC:9E:17\"]}, \"Xiaomi\": {\"peso\": 5, \"prefijos\": [\"00:9E:C8\", \"14:F6:5A\", \"28:6C:07\", \"34:CE:00\", \"50:64:2B\"]}, \"Huawei\": {\"peso\": 4, \"prefijos\": [\"00:18:82\", \"00:46:4B\", \"10:44:00\", \"48:46:F1\", \"A4:39:B3\"]}, \"Google\": {\"peso\": 3, \"prefijos\": [\"3C:5A:B4\", \"54:60:09\", \"94:EB:CD\", \"A4:77:33\", \"F4:F5:D8\"]}, \"Sony\": {\"peso\": 3, \"prefijos\": [\"00:13:A9\", \"00:1A:80\", \"00:24:8D\", \"30:52:CB\", \"AC:9B:0A\"]}, \"Acer\": {\"peso\": 2, \"prefijos\": [\"00:01:80\", \"00:09:DB\", \"00:1E:68\", \"04:7D:7B\", \"18:67:B0\"]}, \"Microsoft\": {\"peso\": 2, \"prefijos\": [\"00:15:5D\", \"28:18:78\", \"7C:1E:52\", \"98:5F:D3\", \"DC:53:7C\"]}, \"Motorola\": {\"peso\": 2, \"prefijos\": [\"00:04:56\", \"00:08:0E\", \"00:11:50\", \"3C:2E:F9\", \"48:2C:A0\"]}}, \"SISTEMAS\": {\"Windows 11\": 39.18, \"Android\": 23.23, \"Windows 10\": 19.44, \"iOS\": 15.12, \"macOS\": 3.02}, \"FAB_POR_OS\": {\"Android\": {\"Samsung\": 47.2, \"Xiaomi\": 14.3, \"Huawei\": 12.1, \"Google\": 9.0, \"Acer\": 6.1, \"Microsoft\": 5.8, \"Motorola\": 5.5}, \"Windows 10\": {\"Intel\": 25.1, \"Lenovo\": 15.9, \"HP\": 13.6, \"Dell\": 11.8, \"ASUS\": 10.6, \"Samsung\": 8.6, \"Sony\": 5.1, \"Xiaomi\": 2.6, \"Huawei\": 2.1, \"Google\": 1.7, \"Acer\": 1.2, \"Microsoft\": 0.9, \"Motorola\": 0.8}, \"Windows 11\": {\"Intel\": 25.3, \"Lenovo\": 15.3, \"HP\": 13.7, \"Dell\": 11.6, \"ASUS\": 10.8, \"Samsung\": 8.6, \"Sony\": 5.4, \"Xiaomi\": 2.6, \"Huawei\": 2.1, \"Google\": 1.3, \"Acer\": 1.3, \"Motorola\": 1.1, \"Microsoft\": 1.0}, \"iOS\": {\"Apple\": 100.0}, \"macOS\": {\"Apple\": 100.0}}, \"IDIOMAS\": {\"Android\": {\"es-ES\": 25, \"en-GB\": 14, \"en-US\": 10, \"fr-FR\": 10, \"de-DE\": 9, \"it-IT\": 8, \"pt-PT\": 6, \"nl-NL\": 4, \"pl-PL\": 3, \"ca-ES\": 4, \"sv-SE\": 3, \"es-MX\": 4}, \"iOS\": {\"es-ES\": 27, \"en-GB\": 14, \"en-US\": 12, \"fr-FR\": 10, \"de-DE\": 8, \"it-IT\": 8, \"pt-PT\": 6, \"nl-NL\": 4, \"pl-PL\": 3, \"ca-ES\": 3, \"sv-SE\": 2, \"es-MX\": 3}, \"Windows 11\": {\"es-ES\": 24, \"en-GB\": 17, \"en-US\": 15, \"fr-FR\": 10, \"de-DE\": 10, \"it-IT\": 7, \"pt-PT\": 5, \"nl-NL\": 4, \"pl-PL\": 3, \"sv-SE\": 2, \"es-MX\": 3}, \"Windows 10\": {\"es-ES\": 22, \"en-GB\": 17, \"en-US\": 16, \"fr-FR\": 10, \"de-DE\": 10, \"it-IT\": 8, \"pt-PT\": 5, \"nl-NL\": 4, \"pl-PL\": 3, \"es-MX\": 5}, \"macOS\": {\"es-ES\": 22, \"en-GB\": 18, \"en-US\": 17, \"fr-FR\": 10, \"de-DE\": 9, \"it-IT\": 7, \"pt-PT\": 5, \"nl-NL\": 4, \"sv-SE\": 3, \"es-MX\": 5}}, \"PAISES\": {\"ES\": 28, \"GB\": 12, \"FR\": 10, \"DE\": 10, \"IT\": 8, \"PT\": 7, \"US\": 6, \"NL\": 4, \"IE\": 3, \"BE\": 3, \"SE\": 2, \"DK\": 2, \"PL\": 2, \"CH\": 1, \"AT\": 1, \"MX\": 1}, \"NOMBRES\": [\"Alejandro\", \"Alba\", \"Álvaro\", \"Ana\", \"Andrea\", \"Antonio\", \"Beatriz\", \"Bruno\", \"Carlos\", \"Carmen\", \"Claudia\", \"Daniel\", \"David\", \"Diego\", \"Elena\", \"Elisa\", \"Enrique\", \"Eva\", \"Fernando\", \"Gabriel\", \"Irene\", \"Javier\", \"Jorge\", \"José\", \"Laura\", \"Lucía\", \"Luis\", \"Manuel\", \"María\", \"Marta\", \"Miguel\", \"Natalia\", \"Nicolás\", \"Pablo\", \"Patricia\", \"Paula\", \"Raquel\", \"Rafael\", \"Sara\", \"Sergio\", \"Sofía\", \"Teresa\", \"Víctor\", \"Adam\", \"Amelia\", \"Arthur\", \"Charlotte\", \"Edward\", \"Eleanor\", \"Emily\", \"George\", \"Grace\", \"Harry\", \"Henry\", \"Isla\", \"Jack\", \"Jacob\", \"James\", \"Jessica\", \"Liam\", \"Oliver\", \"Olivia\", \"Oscar\", \"Sophie\", \"Thomas\", \"William\", \"Adrien\", \"Camille\", \"Chloé\", \"Clément\", \"Élodie\", \"Étienne\", \"Hugo\", \"Julien\", \"Léa\", \"Louis\", \"Manon\", \"Mathieu\", \"Pierre\", \"Théo\", \"Anna\", \"Ben\", \"Clara\", \"Felix\", \"Finn\", \"Friedrich\", \"Greta\", \"Hannah\", \"Jonas\", \"Johanna\", \"Karl\", \"Klara\", \"Leon\", \"Lena\", \"Max\", \"Maximilian\", \"Paul\", \"Alessandro\", \"Alessia\", \"Chiara\", \"Davide\", \"Federico\", \"Francesca\", \"Gabriele\", \"Giulia\", \"Lorenzo\", \"Marco\", \"Matteo\", \"Simone\", \"Valentina\", \"Carolina\", \"Diogo\", \"Duarte\", \"Inês\", \"João\", \"Leonor\", \"Mafalda\", \"Mariana\", \"Rita\", \"Rodrigo\", \"Tiago\", \"Anne\", \"Erik\", \"Jens\", \"Karin\", \"Lars\", \"Lotte\", \"Maja\", \"Niels\", \"Sven\", \"Aleksandra\", \"Jakub\", \"Jan\", \"Katarzyna\", \"Krzysztof\", \"Marek\", \"Mateusz\", \"Piotr\", \"Tomasz\", \"Aisha\", \"Amir\", \"Fatima\", \"Hassan\", \"Layla\", \"Omar\", \"Rania\", \"Youssef\", \"Mei\", \"Hana\", \"Kenji\", \"Yuki\", \"Arjun\", \"Priya\", \"Rahul\", \"Sanjay\"], \"APELLIDOS\": [\"García\", \"Martínez\", \"López\", \"Sánchez\", \"González\", \"Rodríguez\", \"Fernández\", \"Pérez\", \"Gómez\", \"Martín\", \"Jiménez\", \"Ruiz\", \"Hernández\", \"Díaz\", \"Moreno\", \"Muñoz\", \"Álvarez\", \"Romero\", \"Alonso\", \"Navarro\", \"Torres\", \"Domínguez\", \"Vázquez\", \"Ramos\", \"Ramírez\", \"Ortega\", \"Delgado\", \"Castro\", \"Ortiz\", \"Smith\", \"Jones\", \"Taylor\", \"Brown\", \"Williams\", \"Wilson\", \"Evans\", \"Thomas\", \"Roberts\", \"Johnson\", \"Lewis\", \"Walker\", \"Robinson\", \"Wood\", \"Thompson\", \"White\", \"Watson\", \"Murphy\", \"Kelly\", \"Ryan\", \"Martin\", \"Bernard\", \"Dubois\", \"Thomas\", \"Robert\", \"Richard\", \"Petit\", \"Durand\", \"Leroy\", \"Moreau\", \"Simon\", \"Laurent\", \"Michel\", \"Müller\", \"Schmidt\", \"Schneider\", \"Fischer\", \"Weber\", \"Meyer\", \"Wagner\", \"Becker\", \"Schulz\", \"Hoffmann\", \"Schäfer\", \"Koch\", \"Bauer\", \"Richter\", \"Klein\", \"Rossi\", \"Russo\", \"Ferrari\", \"Esposito\", \"Bianchi\", \"Romano\", \"Colombo\", \"Ricci\", \"Marino\", \"Greco\", \"Bruno\", \"Gallo\", \"Conti\", \"De Luca\", \"Costa\", \"Silva\", \"Santos\", \"Ferreira\", \"Pereira\", \"Oliveira\", \"Rodrigues\", \"Martins\", \"Sousa\", \"Jansen\", \"De Vries\", \"Van den Berg\", \"Van Dijk\", \"Bakker\", \"Visser\", \"Smit\", \"Meijer\", \"Andersson\", \"Johansson\", \"Karlsson\", \"Nilsson\", \"Eriksson\", \"Larsson\", \"Olsson\", \"Persson\", \"Hansen\", \"Nielsen\", \"Kowalski\", \"Nowak\", \"Wójcik\", \"Kowalczyk\", \"Kamiński\", \"Lewandowski\", \"Zieliński\", \"Szymański\", \"Dąbrowski\", \"Hassan\", \"Khan\", \"Patel\", \"Shah\", \"Singh\", \"Kumar\", \"Gupta\", \"Chen\", \"Wang\", \"Zhang\", \"Tanaka\", \"Suzuki\"], \"DOMINIOS\": [\"gmail.com\", \"hotmail.com\", \"outlook.com\", \"yahoo.com\", \"icloud.com\", \"proton.me\"]};\n\nconst elegir = (obj) => {\n    const claves = Object.keys(obj);\n    const total = claves.reduce((s, k) => s + obj[k], 0);\n    let r = Math.random() * total;\n    for (const k of claves) { r -= obj[k]; if (r <= 0) return k; }\n    return claves[claves.length - 1];\n};\nconst pick = (arr) => arr[Math.floor(Math.random() * arr.length)];\nconst randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));\nconst norm = (t) => t.normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\n\n// Pool de identidades (se crea una vez y se reutiliza -> usuarios recurrentes)\nlet pool = context.get('pool');\nif (!pool || !pool[0] || !pool[0].fabricante) {   // se recrea si el pool es de una versión anterior\n    pool = [];\n    for (let i = 0; i < 3000; i++) {\n        const nombre = pick(D.NOMBRES), apellido = pick(D.APELLIDOS);\n        const so = elegir(D.SISTEMAS);\n        const fab = elegir(D.FAB_POR_OS[so]);        // fabricante coherente con el SO (como en el CSV v3)\n        pool.push({\n            fabricante: fab,\n            nombre: nombre + ' ' + apellido,\n            email: norm(nombre) + '.' + norm(apellido).replace(/ /g, '') + '@' + pick(D.DOMINIOS),\n            edad: randInt(15, 85),\n            pais: elegir(D.PAISES),\n            os: so,\n            idioma: elegir(D.IDIOMAS[so])\n        });\n    }\n    context.set('pool', pool);\n}\n\n// Más tráfico en las horas punta (7:30-9:30 y 18:00-20:00, hora de Madrid)\nconst p = new Intl.DateTimeFormat('en-GB', {timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false}).format(new Date()).split(':');\nconst minutos = parseInt(p[0]) * 60 + parseInt(p[1]);\nconst punta = (minutos >= 450 && minutos <= 570) || (minutos >= 1080 && minutos <= 1200);\nconst n = punta ? randInt(2, 4) : randInt(0, 1);\n\nconst ahora = Date.now();\nconst registros = [];\nfor (let i = 0; i < n; i++) {\n    const per = pick(pool);\n    const marca = per.fabricante;\n    const mac = pick(D.FABRICANTES[marca].prefijos) + ':' +\n        [0, 1, 2].map(() => randInt(0, 255).toString(16).toUpperCase().padStart(2, '0')).join(':');\n    const r = {\n        hora_ms: ahora + i,           // +i ms para que no coincidan dos puntos\n        mac: mac, fabricante: marca, nombre: per.nombre, os: per.os,\n        idioma: per.idioma, edad: String(per.edad), email: per.email, pais: per.pais\n    };\n    // ~3% de registros con errores, como en el CSV (se descartarán al validar)\n    if (Math.random() < 0.03) {\n        const t = randInt(1, 5);\n        if (t === 1) r.mac = 'MAC-INVALIDA';\n        if (t === 2) r.email = r.email.replace('@', '');\n        if (t === 3) r.pais = 'ESP';\n        if (t === 4) r.edad = 'edad_' + r.edad;\n        if (t === 5) r.fabricante = (r.os === 'iOS' || r.os === 'macOS') ? 'Dell' : 'Apple';   // SO y fabricante incoherentes\n    }\n    registros.push(r);\n}\nif (registros.length === 0) return null;\nmsg.payload = registros;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 330,
+    "y": 100,
+    "wires": [
+      [
+        "sim_val"
+      ]
+    ]
+  },
+  {
+    "id": "sim_val",
+    "type": "function",
+    "z": "tab_sim",
+    "name": "validar y transformar",
+    "func": "// Validación + transformación al formato de InfluxDB (mismas reglas que en pandas)\nconst FAB = new Set([\"ASUS\", \"Acer\", \"Apple\", \"Dell\", \"Google\", \"HP\", \"Huawei\", \"Intel\", \"Lenovo\", \"Microsoft\", \"Motorola\", \"Samsung\", \"Sony\", \"Xiaomi\"]), OS = new Set([\"Android\", \"Windows 10\", \"Windows 11\", \"iOS\", \"macOS\"]), IDI = new Set([\"ca-ES\", \"de-DE\", \"en-GB\", \"en-US\", \"es-ES\", \"es-MX\", \"fr-FR\", \"it-IT\", \"nl-NL\", \"pl-PL\", \"pt-PT\", \"sv-SE\"]), PAI = new Set([\"AT\", \"BE\", \"CH\", \"DE\", \"DK\", \"ES\", \"FR\", \"GB\", \"IE\", \"IT\", \"MX\", \"NL\", \"PL\", \"PT\", \"SE\", \"US\"]);\nconst RE_MAC = /^(?:[0-9A-F]{2}:){5}[0-9A-F]{2}$/;\nconst RE_EMAIL = /^[a-z0-9]+\\.[a-z0-9]+@(?:gmail\\.com|hotmail\\.com|outlook\\.com|yahoo\\.com|icloud\\.com|proton\\.me)$/;\nconst RE_NOMBRE = /^[\\p{L}]+(?:[ '\\-][\\p{L}]+)+$/u;\n\n// Coherencia SO-fabricante: iOS/macOS solo Apple; Android no lleva marcas de PC; Windows no lleva Apple\nconst FAB_ANDROID = new Set([\"Samsung\", \"Xiaomi\", \"Huawei\", \"Google\", \"Acer\", \"Microsoft\", \"Motorola\"]);\nconst coherente = (os, fab) => (os === 'iOS' || os === 'macOS') ? fab === 'Apple'\n                             : os === 'Android' ? FAB_ANDROID.has(fab) : fab !== 'Apple';\n\nconst rangoEdad = (e) => e <= 24 ? '15-24' : e <= 34 ? '25-34' : e <= 44 ? '35-44'\n                       : e <= 54 ? '45-54' : e <= 64 ? '55-64' : '65-85';\n\nconst buenos = [], malos = [];\nfor (const r of msg.payload) {\n    const edad = Number(r.edad);\n    const ok = RE_MAC.test(r.mac) && FAB.has(r.fabricante) && RE_NOMBRE.test(r.nombre) &&\n               OS.has(r.os) && IDI.has(r.idioma) && Number.isInteger(edad) && edad >= 15 && edad <= 85 &&\n               RE_EMAIL.test(r.email) && PAI.has(r.pais) && coherente(r.os, r.fabricante);\n    if (!ok) { malos.push(r); continue; }\n    buenos.push({\n        measurement: 'captaciones',\n        tags: { fabricante: r.fabricante, os: r.os, idioma: r.idioma, pais: r.pais, rango_edad: rangoEdad(edad) },\n        fields: { mac: r.mac, nombre: r.nombre, email: r.email, edad: edad },\n        timestamp: r.hora_ms\n    });\n}\nconst salidaOk = buenos.length ? { payload: buenos } : null;\nconst salidaKo = malos.length ? { payload: malos } : null;\nreturn [salidaOk, salidaKo];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 570,
+    "y": 100,
+    "wires": [
+      [
+        "sim_dbg_ok",
+        "lp_76b214e2"
+      ],
+      [
+        "sim_dbg_ko"
+      ]
+    ]
+  },
+  {
+    "id": "sim_dbg_ok",
+    "type": "debug",
+    "z": "tab_sim",
+    "name": "puntos válidos",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 800,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "sim_dbg_ko",
+    "type": "debug",
+    "z": "tab_sim",
+    "name": "rechazadas",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 790,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "tab_met",
+    "type": "tab",
+    "label": "2 · API tiempo (Open-Meteo)",
+    "disabled": false,
+    "info": "Consulta Open-Meteo cada 10 min y guarda el tiempo del aeropuerto en contexto_madrid"
+  },
+  {
+    "id": "c2",
+    "type": "comment",
+    "z": "tab_met",
+    "name": "Open-Meteo → InfluxDB",
+    "info": "API gratuita sin clave. Barajas: 40.4936, -3.5668",
+    "x": 200,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "met_inj",
+    "type": "inject",
+    "z": "tab_met",
+    "name": "cada 10 min",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "600",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "met_http"
+      ]
+    ]
+  },
+  {
+    "id": "met_http",
+    "type": "http request",
+    "z": "tab_met",
+    "name": "GET Open-Meteo",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "https://api.open-meteo.com/v1/forecast?latitude=40.4936&longitude=-3.5668&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m&hourly=precipitation_probability&forecast_hours=3&timezone=Europe%2FMadrid",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 330,
+    "y": 100,
+    "wires": [
+      [
+        "met_fn",
+        "met_dbg_raw"
+      ]
+    ]
+  },
+  {
+    "id": "met_fn",
+    "type": "function",
+    "z": "tab_met",
+    "name": "preparar punto",
+    "func": "// Open-Meteo -> punto de InfluxDB (measurement tiempo_madrid)\nconst d = msg.payload;\nif (!d || !d.current) { node.warn('Respuesta inesperada de Open-Meteo'); return null; }\nconst c = d.current;\nconst probs = (d.hourly && d.hourly.precipitation_probability) || [];\nconst prob = probs.length ? Math.max.apply(null, probs) : 0;\n\n// Regla de negocio: promocionar paraguas si llueve ahora o es probable en las próximas horas\nconst umbralProb = 50;   // %%\nconst paraguas = (c.precipitation > 0 || c.rain > 0 || prob >= umbralProb) ? 1 : 0;\n\nconst fields = {\n    temperatura: c.temperature_2m,\n    humedad: c.relative_humidity_2m,\n    precipitacion: c.precipitation,\n    viento: c.wind_speed_10m,\n    codigo_tiempo: c.weather_code,\n    prob_lluvia_3h: prob,\n    promocionar_paraguas: paraguas\n};\nfor (const k of Object.keys(fields)) { if (fields[k] === null || fields[k] === undefined) delete fields[k]; }\n\nmsg.payload = [{\n    measurement: 'tiempo_madrid',\n    tags: { ubicacion: 'Madrid-Barajas' },\n    fields: fields,\n    timestamp: Date.now()\n}];\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 540,
+    "y": 100,
+    "wires": [
+      [
+        "met_dbg",
+        "lp_994f3919"
+      ]
+    ]
+  },
+  {
+    "id": "met_dbg",
+    "type": "debug",
+    "z": "tab_met",
+    "name": "punto",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 760,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "met_dbg_raw",
+    "type": "debug",
+    "z": "tab_met",
+    "name": "respuesta cruda",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 540,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "c70d8ba534742c29",
+    "type": "tab",
+    "label": "3 · API llegadas a Barajas (AeroDataBox)",
+    "disabled": false,
+    "info": "Consulta a AeroDataBox (RapidAPI) las llegadas a MAD de las próximas ~12 h cada 3 h y calcula cada minuto las de la próxima hora, con indicadores de cobertura",
+    "env": [
+      {
+        "name": "RAPIDAPI_KEY",
+        "value": "0721c48503msh7080d2e862bc88dp18274bjsnc218a948f4b0",
+        "type": "str"
+      }
+    ]
+  },
+  {
+    "id": "85b3989e27e349ea",
+    "type": "comment",
+    "z": "c70d8ba534742c29",
+    "name": "AeroDataBox · llegadas a Madrid-Barajas → InfluxDB",
+    "info": "Pon tu clave en las propiedades de la pestaña (variable RAPIDAPI_KEY).",
+    "x": 270,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "14f0277f232c54bf",
+    "type": "inject",
+    "z": "c70d8ba534742c29",
+    "name": "cada 3 h",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "10800",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "2",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "c1648c612d21768c"
+      ]
+    ]
+  },
+  {
+    "id": "c1648c612d21768c",
+    "type": "function",
+    "z": "c70d8ba534742c29",
+    "name": "preparar petición",
+    "func": "// Prepara la petición a AeroDataBox (RapidAPI): llegadas a Madrid-Barajas (MAD) en las próximas ~12 h.\n// El endpoint FIDS admite como máximo 12 h por consulta, y las horas se piden en hora local del aeropuerto (Madrid).\nconst clave = env.get('RAPIDAPI_KEY');\nif (!clave) { node.error('Falta la variable de entorno RAPIDAPI_KEY (doble clic en la pestaña > Variables de entorno)'); return null; }\n\nconst ahora = Date.now();\nconst hasta = ahora + 719 * 60000;                               // 11 h 59 min (límite del endpoint: 12 h)\nconst fmt = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });\nconst local = (ms) => fmt.format(new Date(ms)).replace(' ', 'T');   // AAAA-MM-DDTHH:mm\nconst d = local(ahora), h = local(hasta);\nif (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(d) || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(h)) { node.error('Formato de hora inesperado: ' + d + ' / ' + h); return null; }\n\nmsg.ventana = { desde: ahora, hasta: hasta };                    // ventana que cubrirá esta consulta (se usa para calcular la cobertura)\nmsg.headers = { 'x-rapidapi-key': clave, 'x-rapidapi-host': 'aerodatabox.p.rapidapi.com' };\nmsg.url = 'https://aerodatabox.p.rapidapi.com/flights/airports/iata/MAD/' + d + '/' + h +\n    '?direction=Arrival&withLeg=false&withCancelled=true&withCodeshared=false&withCargo=false&withPrivate=false&withLocation=false';\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 330,
+    "y": 100,
+    "wires": [
+      [
+        "3f772a710cd3b527"
+      ]
+    ]
+  },
+  {
+    "id": "3f772a710cd3b527",
+    "type": "http request",
+    "z": "c70d8ba534742c29",
+    "name": "GET AeroDataBox FIDS",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 550,
+    "y": 100,
+    "wires": [
+      [
+        "0e8bdd09ed3d69f3",
+        "18908dea5f22c7ed"
+      ]
+    ]
+  },
+  {
+    "id": "0e8bdd09ed3d69f3",
+    "type": "function",
+    "z": "c70d8ba534742c29",
+    "name": "guardar horario",
+    "func": "// Guarda el horario de llegadas recibido de AeroDataBox en el contexto del flujo.\n// También guarda la ventana de tiempo que cubre la consulta (inicio, fin) para calcular la cobertura.\nconst p = msg.payload;\nconst ahora = Date.now();\nconst previo = flow.get('api') || {};\n\nconst fallo = (texto) => {\n    flow.set('api', Object.assign({}, previo, { ok: 0 }));      // se conserva el último horario válido, pero marcado como no actualizado\n    node.status({ fill: 'red', shape: 'ring', text: 'error' });\n    node.warn('AeroDataBox: ' + texto);\n    return null;\n};\nif (msg.statusCode && msg.statusCode !== 200) return fallo('HTTP ' + msg.statusCode + ' ' + JSON.stringify(p).slice(0, 300));\nif (!p || !Array.isArray(p.arrivals)) return fallo('respuesta inesperada: ' + JSON.stringify(p).slice(0, 300));\n\nconst v = msg.ventana || { desde: ahora, hasta: ahora + 719 * 60000 };\nconst aMs = (o) => { const t = o && o.utc; return t ? Date.parse(String(t).replace(' ', 'T')) : NaN; };   // \"2026-10-14 09:50Z\"\n\nconst vistos = new Set(), vuelos = [];\nfor (const f of p.arrivals) {\n    const m = f.movement || {};\n    const prog = aMs(m.scheduledTime);\n    if (isNaN(prog)) continue;\n    let estado = String(f.status || '').toLowerCase();\n    if (estado === 'diverted') continue;                         // desviado a otro aeropuerto: no llega a MAD\n    if (estado === 'canceleduncertain') estado = 'canceled';\n    const clave = (f.number || '?') + '|' + prog;                // por si se repite algún vuelo\n    if (vistos.has(clave)) continue;\n    vistos.add(clave);\n    const rev = aMs(m.revisedTime), pred = aMs(m.predictedTime);\n    vuelos.push({\n        vuelo: f.number || '?', origen: (m.airport && (m.airport.iata || m.airport.icao)) || '?', prog: prog,\n        eta: !isNaN(rev) ? rev : (!isNaN(pred) ? pred : prog),\n        estado: estado, aterrizado: estado === 'arrived' || !isNaN(aMs(m.runwayTime))\n    });\n}\n\nflow.set('horario', vuelos);\nflow.set('api', { ok: 1, ts: ahora, recibidos: p.arrivals.length, paginas: 1, inicio: v.desde, fin: v.hasta });\nnode.status({ fill: 'green', shape: 'dot', text: p.arrivals.length + ' llegadas recibidas (' + vuelos.length + ' válidas)' });\nreturn null;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 780,
+    "y": 100,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "18908dea5f22c7ed",
+    "type": "debug",
+    "z": "c70d8ba534742c29",
+    "name": "respuesta cruda",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 780,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "53557cc3b0a9a695",
+    "type": "inject",
+    "z": "c70d8ba534742c29",
+    "name": "cada 60 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "60",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "10",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 260,
+    "wires": [
+      [
+        "9f2c843922f02257"
+      ]
+    ]
+  },
+  {
+    "id": "9f2c843922f02257",
+    "type": "function",
+    "z": "c70d8ba534742c29",
+    "name": "calcular llegadas",
+    "func": "// Calcula cada minuto cuántos aviones llegan en la próxima hora, a partir del último horario recibido de AeroDataBox.\n// Solo se da un recuento como fiable si la ventana consultada cubre esa franja (campos cobertura_*).\nconst UMBRAL_HOTELES = 38;       // llegadas previstas en la próxima hora a partir de las cuales se promocionan hoteles (ajustable)\nconst CADUCIDAD_MIN = 240;       // datos de más de 4 h se consideran caducados\nconst PIPELINE = 'airlabs_free_v2';   // se mantiene el nombre para no tocar las consultas del dashboard\n\nconst vuelos = flow.get('horario') || [];\nconst api = flow.get('api') || { ok: 0, ts: 0, recibidos: 0 };\nif (!flow.get('api')) return null;               // todavía no hay datos de la API\n\nconst MIN = 60000, HORA = 3600000, ahora = Date.now();\nconst dos = (n) => String(n).padStart(2, '0');\nconst cancelado = (v) => v.estado === 'cancelled' || v.estado === 'canceled';\nconst retraso = (v) => Math.max(0, Math.round((v.eta - v.prog) / MIN));\nconst vivos = vuelos.filter(v => !cancelado(v) && !v.aterrizado && v.estado !== 'arrived');\nconst proxima = vivos.filter(v => v.eta > ahora && v.eta <= ahora + HORA).sort((a, b) => a.eta - b.eta);\n\n// ---- cobertura: hasta qué instante cubre la consulta (ventana pedida a la API) ----\nconst antiguedad = Math.round((ahora - api.ts) / MIN);\nconst fresco = api.ok === 1 && antiguedad <= CADUCIDAD_MIN && (api.inicio || 0) <= ahora;\nconst horizonte = fresco ? Math.min(api.fin || 0, ahora + 12 * HORA) : 0;\nconst cubre = (ms) => horizonte >= ahora + ms ? 1 : 0;\nconst cobHoras = horizonte > ahora ? Math.round((horizonte - ahora) / HORA * 10) / 10 : 0;\nconst cobProxima = cubre(HORA), cob3h = cubre(3 * HORA);\n\nconst puntos = [];\npuntos.push({\n    measurement: 'llegadas_barajas', tags: { aeropuerto: 'MAD', pipeline: PIPELINE },\n    fields: {\n        llegadas_proxima_hora: proxima.length,\n        llegadas_proximas_3h: vivos.filter(v => v.eta > ahora && v.eta <= ahora + 3 * HORA).length,\n        retrasadas_proxima_hora: proxima.filter(v => retraso(v) >= 15).length,\n        canceladas_hoy: vuelos.filter(cancelado).length,\n        promocionar_hoteles: (cobProxima === 1 && proxima.length >= UMBRAL_HOTELES) ? 1 : 0, umbral_hoteles: UMBRAL_HOTELES,\n        cobertura_proxima_hora: cobProxima, cobertura_proximas_3h: cob3h, cobertura_horas: cobHoras,\n        api_ok: fresco ? 1 : 0, vuelos_recibidos: api.recibidos || 0, paginas_consulta: api.paginas || 0, antiguedad_datos_min: antiguedad\n    },\n    timestamp: ahora\n});\n\n// llegadas por hora en las próximas 12 horas (hora de Madrid): solo las horas completamente cubiertas\nconst inicioHora = Math.floor(ahora / HORA) * HORA;\nconst horaMadrid = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hourCycle: 'h23' });\nfor (let k = 0; k < 12; k++) {\n    const lo = inicioHora + k * HORA, hi = lo + HORA;\n    if (hi > horizonte) break;\n    puntos.push({\n        measurement: 'llegadas_barajas_hora', tags: { aeropuerto: 'MAD', pipeline: PIPELINE, orden: dos(k), hora: horaMadrid.format(new Date(lo)) + ':00' },\n        fields: { llegadas: vivos.filter(v => v.eta >= lo && v.eta < hi).length }, timestamp: ahora\n    });\n}\n// las 10 próximas llegadas encontradas\nproxima.slice(0, 10).forEach((v, i) => {\n    puntos.push({\n        measurement: 'llegadas_barajas_proximas', tags: { pipeline: PIPELINE, orden: dos(i + 1), vuelo: v.vuelo, origen: v.origen, estado: retraso(v) >= 15 ? 'retrasado' : 'a tiempo' },\n        fields: { eta_min: Math.round((v.eta - ahora) / MIN), retraso_min: retraso(v) }, timestamp: ahora\n    });\n});\nmsg.payload = puntos;\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 340,
+    "y": 260,
+    "wires": [
+      [
+        "lp_55bbc9a8",
+        "3f7e64a993d722db"
+      ]
+    ]
+  },
+  {
+    "id": "3f7e64a993d722db",
+    "type": "debug",
+    "z": "c70d8ba534742c29",
+    "name": "llegadas",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 600,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "tab_ventas",
+    "type": "tab",
+    "label": "4 · Ventas del aeropuerto",
+    "disabled": false,
+    "info": "Simula las compras en tiendas y cafeterías del aeropuerto y las guarda en captaciones_tiemporeal (measurement ventas)"
+  },
+  {
+    "id": "vta_c",
+    "type": "comment",
+    "z": "tab_ventas",
+    "name": "Simulador de ventas (generador_indices.py)",
+    "info": "Cada 3 s genera compras en 3 tiendas de souvenirs, 2 de artículos de viaje y 5 cafeterías, con más actividad en hora punta.",
+    "x": 220,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "vta_inj",
+    "type": "inject",
+    "z": "tab_ventas",
+    "name": "cada 3 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "3",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "vta_fn"
+      ]
+    ]
+  },
+  {
+    "id": "vta_fn",
+    "type": "function",
+    "z": "tab_ventas",
+    "name": "generar compras",
+    "func": "// Simulador de compras en el aeropuerto (misma lógica que generador_indices.py)\n// Un \"tick\" dura 3 s: las probabilidades por minuto del .py se reparten entre los 20 ticks de cada minuto.\nconst TICKS_POR_MINUTO = 20;\n\nconst TIENDAS_SOUVENIR = [\n    { nombre: \"Budget Treasures\",  gama: \"budget\",    precio: [2, 15] },\n    { nombre: \"Island Keepsakes\",  gama: \"mid-range\", precio: [15, 60] },\n    { nombre: \"Luxury Souvenirs\",  gama: \"premium\",   precio: [60, 250] }\n];\nconst TIENDAS_VIAJE = [\n    { nombre: \"Travel Essentials\",   precio: [5, 40] },\n    { nombre: \"Wanderlust Supplies\", precio: [8, 55] }\n];\nconst CAFETERIAS = [\n    { nombre: \"Bean There Café\",  precio: [3, 8] },\n    { nombre: \"Morning Brew\",     precio: [3, 9] },\n    { nombre: \"Caffeine Corner\",  precio: [2, 7] },\n    { nombre: \"The Daily Grind\",  precio: [4, 10] },\n    { nombre: \"Espresso Express\", precio: [3, 8] }\n];\n\nconst randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));\nconst uniforme = (a, b) => a + Math.random() * (b - a);\nconst redondea = (x) => Math.round(x * 100) / 100;\n\n// Hora de Madrid\nconst p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false })\n    .format(new Date()).split(':');\nconst hora = parseInt(p[0]);\nconst minutos = hora * 60 + parseInt(p[1]);\nconst cafeteriasAbiertas = hora >= 8 && hora <= 20;                                   // 08:00-21:00\nconst horaPunta = (minutos >= 450 && minutos <= 570) || (minutos >= 960 && minutos <= 1200);   // 7:30-9:30 y 16:00-20:00\n\nconst tiendas = [];\nTIENDAS_SOUVENIR.forEach(t => tiendas.push({ tipo: \"souvenir\", ...t }));\nTIENDAS_VIAJE.forEach(t => tiendas.push({ tipo: \"travel_necessity\", ...t }));\nif (cafeteriasAbiertas) CAFETERIAS.forEach(t => tiendas.push({ tipo: \"coffee\", ...t }));\n\nlet id = context.get('transaction_id') || 1000;\nconst ahora = Date.now();\nconst puntos = [];\nfor (const t of tiendas) {\n    let n = 0;\n    if (horaPunta) { if (Math.random() < 0.80 / TICKS_POR_MINUTO) n = randInt(1, 3); }   // punta: 1-3 compras\n    else           { if (Math.random() < 0.30 / TICKS_POR_MINUTO) n = 1; }               // normal: 0-1 compras\n    for (let k = 0; k < n; k++) {\n        const precioUnidad = redondea(uniforme(t.precio[0], t.precio[1]));\n        const unidades = randInt(1, 5);\n        const tags = { shop_name: t.nombre, shop_type: t.tipo };\n        if (t.gama) tags.price_bracket = t.gama;\n        puntos.push({\n            measurement: 'ventas',\n            tags: tags,\n            fields: { transaction_id: id, items_sold: unidades, unit_price: precioUnidad, total_revenue: redondea(precioUnidad * unidades) },\n            timestamp: ahora + puntos.length          // +1 ms por compra para que no coincidan\n        });\n        id++;\n    }\n}\ncontext.set('transaction_id', id);\nif (puntos.length === 0) return null;\nmsg.payload = puntos;\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 350,
+    "y": 100,
+    "wires": [
+      [
+        "lp_vta_db",
+        "vta_dbg"
+      ]
+    ]
+  },
+  {
+    "id": "vta_dbg",
+    "type": "debug",
+    "z": "tab_ventas",
+    "name": "compras",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 580,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "1e3b316d99230e7a",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "node-red-contrib-influxdb": "0.7.0"
+    }
+  },
+  {
+    "id": "lp_76b214e2",
+    "type": "function",
+    "z": "tab_sim",
+    "name": "a line protocol",
+    "func": "// Transporte HTTP a InfluxDB (sustituye al nodo influxdb batch).\n// Convierte [{measurement, tags, fields, timestamp_ms}] a line protocol\n// y deja la peticion lista con env.get (entorno del proceso).\nfunction esc(s){return String(s).replace(/,/g,'\\\\,').replace(/ /g,'\\\\ ').replace(/=/g,'\\\\=');}\nfunction fieldVal(v){\n  if(typeof v==='boolean') return v?'t':'f';\n  if(typeof v==='number') return Number.isInteger(v)? v+'i' : String(v);\n  return '\"'+String(v).replace(/\\\\/g,'\\\\\\\\').replace(/\"/g,'\\\\\"')+'\"';\n}\nconst pts = Array.isArray(msg.payload)?msg.payload:[msg.payload];\nconst lines = pts.map(p=>{\n  const tags = Object.entries(p.tags||{}).map(([k,v])=>esc(k)+'='+esc(v)).join(',');\n  const fields = Object.entries(p.fields||{}).map(([k,v])=>esc(k)+'='+fieldVal(v)).join(',');\n  let line = p.measurement+','+tags+' '+fields;\n  if(p.timestamp) line += ' '+p.timestamp;\n  return line;\n}).filter(l=>l.indexOf(' ')>0);\nif(!lines.length) return null;\nmsg.payload = lines.join('\\n');\nmsg.url = env.get('INFLUXDB_URL')+'/api/v2/write?org='+env.get('INFLUXDB_ORG')+'&bucket=captaciones_tiemporeal&precision=ms';\nmsg.headers = {Authorization: 'Token '+env.get('INFLUXDB_TOKEN'), 'Content-Type': 'text/plain; charset=utf-8'};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 200,
+    "wires": [
+      [
+        "http_76b214e2"
+      ]
+    ]
+  },
+  {
+    "id": "http_76b214e2",
+    "type": "http request",
+    "z": "tab_sim",
+    "name": "write InfluxDB",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 800,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "lp_994f3919",
+    "type": "function",
+    "z": "tab_met",
+    "name": "a line protocol",
+    "func": "// Transporte HTTP a InfluxDB (sustituye al nodo influxdb batch).\n// Convierte [{measurement, tags, fields, timestamp_ms}] a line protocol\n// y deja la peticion lista con env.get (entorno del proceso).\nfunction esc(s){return String(s).replace(/,/g,'\\\\,').replace(/ /g,'\\\\ ').replace(/=/g,'\\\\=');}\nfunction fieldVal(v){\n  if(typeof v==='boolean') return v?'t':'f';\n  if(typeof v==='number') return Number.isInteger(v)? v+'i' : String(v);\n  return '\"'+String(v).replace(/\\\\/g,'\\\\\\\\').replace(/\"/g,'\\\\\"')+'\"';\n}\nconst pts = Array.isArray(msg.payload)?msg.payload:[msg.payload];\nconst lines = pts.map(p=>{\n  const tags = Object.entries(p.tags||{}).map(([k,v])=>esc(k)+'='+esc(v)).join(',');\n  const fields = Object.entries(p.fields||{}).map(([k,v])=>esc(k)+'='+fieldVal(v)).join(',');\n  let line = p.measurement+','+tags+' '+fields;\n  if(p.timestamp) line += ' '+p.timestamp;\n  return line;\n}).filter(l=>l.indexOf(' ')>0);\nif(!lines.length) return null;\nmsg.payload = lines.join('\\n');\nmsg.url = env.get('INFLUXDB_URL')+'/api/v2/write?org='+env.get('INFLUXDB_ORG')+'&bucket=contexto_madrid&precision=ms';\nmsg.headers = {Authorization: 'Token '+env.get('INFLUXDB_TOKEN'), 'Content-Type': 'text/plain; charset=utf-8'};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 200,
+    "wires": [
+      [
+        "http_994f3919"
+      ]
+    ]
+  },
+  {
+    "id": "http_994f3919",
+    "type": "http request",
+    "z": "tab_met",
+    "name": "write InfluxDB",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 800,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "lp_55bbc9a8",
+    "type": "function",
+    "z": "c70d8ba534742c29",
+    "name": "a line protocol",
+    "func": "// Transporte HTTP a InfluxDB (sustituye al nodo influxdb batch).\n// Convierte [{measurement, tags, fields, timestamp_ms}] a line protocol\n// y deja la peticion lista con env.get (entorno del proceso).\nfunction esc(s){return String(s).replace(/,/g,'\\\\,').replace(/ /g,'\\\\ ').replace(/=/g,'\\\\=');}\nfunction fieldVal(v){\n  if(typeof v==='boolean') return v?'t':'f';\n  if(typeof v==='number') return Number.isInteger(v)? v+'i' : String(v);\n  return '\"'+String(v).replace(/\\\\/g,'\\\\\\\\').replace(/\"/g,'\\\\\"')+'\"';\n}\nconst pts = Array.isArray(msg.payload)?msg.payload:[msg.payload];\nconst lines = pts.map(p=>{\n  const tags = Object.entries(p.tags||{}).map(([k,v])=>esc(k)+'='+esc(v)).join(',');\n  const fields = Object.entries(p.fields||{}).map(([k,v])=>esc(k)+'='+fieldVal(v)).join(',');\n  let line = p.measurement+','+tags+' '+fields;\n  if(p.timestamp) line += ' '+p.timestamp;\n  return line;\n}).filter(l=>l.indexOf(' ')>0);\nif(!lines.length) return null;\nmsg.payload = lines.join('\\n');\nmsg.url = env.get('INFLUXDB_URL')+'/api/v2/write?org='+env.get('INFLUXDB_ORG')+'&bucket=contexto_madrid&precision=ms';\nmsg.headers = {Authorization: 'Token '+env.get('INFLUXDB_TOKEN'), 'Content-Type': 'text/plain; charset=utf-8'};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 200,
+    "wires": [
+      [
+        "http_55bbc9a8"
+      ]
+    ]
+  },
+  {
+    "id": "http_55bbc9a8",
+    "type": "http request",
+    "z": "c70d8ba534742c29",
+    "name": "write InfluxDB",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 800,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "lp_vta_db",
+    "type": "function",
+    "z": "tab_ventas",
+    "name": "a line protocol",
+    "func": "// Transporte HTTP a InfluxDB (sustituye al nodo influxdb batch).\n// Convierte [{measurement, tags, fields, timestamp_ms}] a line protocol\n// y deja la peticion lista con env.get (entorno del proceso).\nfunction esc(s){return String(s).replace(/,/g,'\\\\,').replace(/ /g,'\\\\ ').replace(/=/g,'\\\\=');}\nfunction fieldVal(v){\n  if(typeof v==='boolean') return v?'t':'f';\n  if(typeof v==='number') return Number.isInteger(v)? v+'i' : String(v);\n  return '\"'+String(v).replace(/\\\\/g,'\\\\\\\\').replace(/\"/g,'\\\\\"')+'\"';\n}\nconst pts = Array.isArray(msg.payload)?msg.payload:[msg.payload];\nconst lines = pts.map(p=>{\n  const tags = Object.entries(p.tags||{}).map(([k,v])=>esc(k)+'='+esc(v)).join(',');\n  const fields = Object.entries(p.fields||{}).map(([k,v])=>esc(k)+'='+fieldVal(v)).join(',');\n  let line = p.measurement+','+tags+' '+fields;\n  if(p.timestamp) line += ' '+p.timestamp;\n  return line;\n}).filter(l=>l.indexOf(' ')>0);\nif(!lines.length) return null;\nmsg.payload = lines.join('\\n');\nmsg.url = env.get('INFLUXDB_URL')+'/api/v2/write?org='+env.get('INFLUXDB_ORG')+'&bucket=captaciones_tiemporeal&precision=ms';\nmsg.headers = {Authorization: 'Token '+env.get('INFLUXDB_TOKEN'), 'Content-Type': 'text/plain; charset=utf-8'};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 200,
+    "wires": [
+      [
+        "http_vta_db"
+      ]
+    ]
+  },
+  {
+    "id": "http_vta_db",
+    "type": "http request",
+    "z": "tab_ventas",
+    "name": "write InfluxDB",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 800,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
     "id": "aeroadd-tab-smoke",
     "type": "tab",
     "label": "InfluxDB smoke test",
@@ -11,7 +701,11 @@
     "type": "inject",
     "z": "aeroadd-tab-smoke",
     "name": "punto de prueba",
-    "props": [{ "p": "payload" }],
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
     "repeat": "300",
     "crontab": "",
     "once": true,
@@ -21,14 +715,18 @@
     "payloadType": "date",
     "x": 150,
     "y": 100,
-    "wires": [["aeroadd-fn-smoke"]]
+    "wires": [
+      [
+        "aeroadd-fn-smoke"
+      ]
+    ]
   },
   {
     "id": "aeroadd-fn-smoke",
     "type": "function",
     "z": "aeroadd-tab-smoke",
     "name": "line protocol",
-    "func": "msg.payload = \"test,source=nodered value=1i\";\nreturn msg;",
+    "func": "msg.payload = \"test,source=nodered value=1i\";\nmsg.url = env.get(\"INFLUXDB_URL\")+\"/api/v2/write?org=\"+env.get(\"INFLUXDB_ORG\")+\"&bucket=\"+env.get(\"INFLUXDB_BUCKET\")+\"&precision=s\";\nmsg.headers = {Authorization: \"Token \"+env.get(\"INFLUXDB_TOKEN\")};\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -37,7 +735,11 @@
     "libs": [],
     "x": 340,
     "y": 100,
-    "wires": [["aeroadd-http-smoke"]]
+    "wires": [
+      [
+        "aeroadd-http-smoke"
+      ]
+    ]
   },
   {
     "id": "aeroadd-http-smoke",
@@ -47,20 +749,21 @@
     "method": "POST",
     "ret": "txt",
     "paytoqs": "ignore",
-    "url": "$(INFLUXDB_URL)/api/v2/write?org=$(INFLUXDB_ORG)&bucket=$(INFLUXDB_BUCKET)&precision=s",
+    "url": "",
     "tls": "",
     "persist": false,
     "proxy": "",
     "insecureHTTPParser": false,
     "authType": "",
     "senderr": false,
-    "headers": [
-      { "keyType": "other", "keyValue": "Authorization", "valueType": "other", "valueValue": "Token $(INFLUXDB_TOKEN)" },
-      { "keyType": "other", "keyValue": "Content-Type", "valueType": "other", "valueValue": "text/plain; charset=utf-8" }
-    ],
+    "headers": [],
     "x": 540,
     "y": 100,
-    "wires": [["aeroadd-debug-smoke"]]
+    "wires": [
+      [
+        "aeroadd-debug-smoke"
+      ]
+    ]
   },
   {
     "id": "aeroadd-debug-smoke",

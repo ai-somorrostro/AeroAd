@@ -1,0 +1,755 @@
+{
+  "title": "Análisis de clientes",
+  "uid": "analisis-clientes",
+  "description": "GENERADO desde BDA/Dashboards/AnalisisDeClientesGrafana.json (formato API v2) - no editar a mano, se regenera.",
+  "tags": [],
+  "timezone": "Europe/Madrid",
+  "time": {
+    "from": "2026-05-31T22:00:00.000Z",
+    "to": "2026-06-30T22:00:00.000Z"
+  },
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "version": 1,
+  "templating": {
+    "list": [
+      {
+        "name": "pais",
+        "label": "País",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "aeroadd-influxdb"
+        },
+        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.pais)\n  |> keep(columns: [\"pais\"])\n  |> group()\n  |> distinct(column: \"pais\")",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "name": "rango_edad",
+        "label": "Rango de edad",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "aeroadd-influxdb"
+        },
+        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.rango_edad)\n  |> keep(columns: [\"rango_edad\"])\n  |> group()\n  |> distinct(column: \"rango_edad\")",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "name": "idioma",
+        "label": "Idioma",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "aeroadd-influxdb"
+        },
+        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.idioma)\n  |> keep(columns: [\"idioma\"])\n  |> group()\n  |> distinct(column: \"idioma\")",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "name": "os",
+        "label": "Sistema Operativo",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "aeroadd-influxdb"
+        },
+        "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => exists r.os)\n  |> keep(columns: [\"os\"])\n  |> group()\n  |> distinct(column: \"os\")",
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Sobre este panel",
+      "description": "",
+      "type": "text",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "content": "**Análisis de los clientes del aeropuerto (junio 2026).** Perfil de los pasajeros conectados a la wifi: cuántos son, de dónde vienen, qué edad y qué dispositivo tienen. Los filtros de arriba (país, rango de edad, idioma y sistema operativo) afectan a todos los paneles salvo al país con más captaciones.",
+        "mode": "markdown"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": []
+    },
+    {
+      "id": 2,
+      "title": "Total de captaciones",
+      "description": "Número total de captaciones según los filtros seleccionados",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> count()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Media de captaciones por hora",
+      "description": "Media de captaciones por hora en el periodo",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "País con mas captaciones",
+      "description": "País de origen con más captaciones (sin filtros)",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^pais$/",
+          "values": true
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 1)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Edad media de los usuarios",
+      "description": "",
+      "type": "stat",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 3,
+        "w": 6,
+        "h": 5
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix: años",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "blue"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Captaciones por hora",
+      "description": "Captaciones por hora; destacan las franjas punta de mañana y tarde",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 8
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "Captaciones",
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Captaciones por dia",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "Captaciones",
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 2,
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group()\n  |> aggregateWindow(every: 1d, fn: count, createEmpty: false)"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Captaciones por pais",
+      "description": "",
+      "type": "barchart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "options": {
+        "barWidth": 0.8,
+        "groupWidth": 0.8,
+        "legend": {
+          "displayMode": "hidden",
+          "showLegend": false
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"pais\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Captaciones por rango de edad",
+      "description": "",
+      "type": "piechart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^_value$/",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"rango_edad\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Captaciones por sistema operativo",
+      "description": "",
+      "type": "piechart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^_value$/",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"os\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Captaciones por idioma",
+      "description": "",
+      "type": "barchart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "options": {
+        "barWidth": 0.8,
+        "groupWidth": 0.8,
+        "legend": {
+          "displayMode": "hidden",
+          "showLegend": false
+        },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"idioma\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Captaciones por fabricante",
+      "description": "Fabricante del dispositivo; depende del sistema operativo",
+      "type": "barchart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "aeroadd-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 8
+      },
+      "options": {
+        "barWidth": 0.8,
+        "groupWidth": 0.8,
+        "legend": {
+          "displayMode": "hidden",
+          "showLegend": false
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "aeroadd-influxdb"
+          },
+          "query": "from(bucket: \"captaciones_tiemporeal\")\n  |> range(start: 2026-06-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"captaciones\")\n  |> filter(fn: (r) => r._field == \"edad\")\n  |> filter(fn: (r) => r.pais =~ /^${pais:regex}$/)\n  |> filter(fn: (r) => r.rango_edad =~ /^${rango_edad:regex}$/)\n  |> filter(fn: (r) => r.idioma =~ /^${idioma:regex}$/)\n  |> filter(fn: (r) => r.os =~ /^${os:regex}$/)\n  |> group(columns: [\"fabricante\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)"
+        }
+      ]
+    }
+  ]
+}
