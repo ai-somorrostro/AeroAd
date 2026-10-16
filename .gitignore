@@ -228,3 +228,6 @@ grafana-data/
 nodered-data/
 .opencode/
 *.log
+
+# Claves API reales (nunca commitear)
+BDA/ApikeyFlights.txt

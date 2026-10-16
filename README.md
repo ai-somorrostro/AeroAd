@@ -1,6 +1,8 @@
 # AeroAdd
 
-Proyecto de Big Data + IA para ingesta, visualización y análisis de datos.
+Proyecto de Big Data + IA para ingesta, visualización y análisis de datos del
+aeropuerto de Madrid-Barajas: captaciones WiFi, ventas, meteorología y llegadas
+de vuelos en InfluxDB, con dashboards en Grafana y flujos en Node-RED.
 
 ## Estructura del repositorio
 
@@ -17,10 +19,10 @@ AeroAdd/
 │   ├── grafana/
 │   │   └── provisioning/
 │   │       └── datasources/influxdb.yml  # datasource InfluxDB (Flux) con token de lectura
-│   ├── nodered/                      # imagen propia + flow de prueba
+│   ├── nodered/                      # imagen propia + flows productivos (5 pestañas)
 │   │   ├── Dockerfile                # base fijada + node-red-contrib-influxdb
 │   │   ├── package.json              # dependencia del contrib (versión fijada)
-│   │   └── flows.json                # punto de prueba a Influx (URL/org/token del entorno)
+│   │   └── flows.json                # simulador WiFi, API Open-Meteo, API llegadas Barajas, ventas, smoke test
 │   ├── loader/             # esqueleto: influxdb-client + heartbeat (pandas lo añadirá la ingesta real)
 │   │   ├── Dockerfile
 │   │   ├── requirements.txt
@@ -28,7 +30,9 @@ AeroAdd/
 ├── data/                   # datasets (gitignorados salvo .gitkeep)
 ├── notebooks/              # parte SBD
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
-└── scripts/                          # create-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP)
+├── BDA/ImporCsvPandas/     # CSV históricos (captaciones junio, rechazadas, dataset integrado)
+├── generadores/            # generadores sintéticos (500K captaciones, ventas)
+└── scripts/                          # create-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP); load-captaciones.py (carga histórica del CSV a InfluxDB)
 ```
 
 ## Servicios
@@ -37,7 +41,7 @@ AeroAdd/
 |-----------|------------------------|------------------------------|--------|
 | influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
-| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | Flow de prueba que escribe en Influx con el token de escritura; puerto y token por `.env` |
+| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | 5 flows: simulador WiFi → `captaciones_tiemporeal`, Open-Meteo → `contexto_madrid`, llegadas Barajas (AeroDataBox/RapidAPI) → `contexto_madrid`, simulador ventas → `captaciones_tiemporeal`, smoke test. Token de escritura por `.env` (`NODERED_INFLUXDB_TOKEN`); la API de vuelos necesita además `RAPIDAPI_KEY` (ver Configuración) |
 | loader    | `build: ./services/loader` | — (sin puerto)             | Esqueleto one-shot: heartbeat a Influx; ingesta real pendiente |
 | mcp-direccion | `grafana/mcp-grafana:2.0.2` | `8000` | MCP oficial; rol **cúpula directiva** (Viewer), service account propia |
 | mcp-analisis  | `grafana/mcp-grafana:2.0.2` | `8001` | MCP oficial; rol **análisis** (Viewer), service account propia |
@@ -53,6 +57,10 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
 - Docker
 - Docker Compose (v2, plugin `docker compose`)
 - Git
+- Python 3.12 con `pandas` e `influxdb-client` (solo para la carga histórica del CSV):
+  ```bash
+  python3.12 -m pip install pandas influxdb-client
+  ```
 
 ## Configuración
 
@@ -61,16 +69,47 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
    cp .env.example .env
    ```
 2. Rellenar a mano en `.env` los valores marcados con TODO: usuarios, contraseñas, organización, bucket, token, URLs y puertos. El archivo `.env` no se sube al repositorio.
+3. **Importante en Windows/WSL**: `.env` y los scripts `.sh` deben tener finales de línea **LF**, no CRLF. Un CRLF en `services/influxdb/init/01-create-buckets.sh` impide arrancar InfluxDB (ver Resolución de problemas). Conversión rápida:
+   ```bash
+   sed -i 's/\r$//' .env services/influxdb/init/*.sh scripts/*.sh
+   ```
+
+### Clave de la API de vuelos (AeroDataBox / RapidAPI)
+
+El flow de llegadas a Barajas la lee de la **variable de entorno de la pestaña** en Node-RED, no solo del contenedor. Hay que ponerla en los dos sitios:
+
+1. En `.env`: `RAPIDAPI_KEY=<tu clave>` (sin comillas).
+2. En Node-RED (`http://localhost:1880`): doble clic en la pestaña `3 · API llegadas a Barajas (AeroDataBox)` → *Variables de entorno* → pon la clave en `RAPIDAPI_KEY` → *Deploy*. (Equivale a editar el campo `env` de esa pestaña en `flows.json`.)
+
+Sin clave válida ese pipeline no trae horarios; el resto de flows siguen funcionando. No subir claves reales al repositorio: van solo en `.env` (gitignorado) y en el volumen `nodered-data`, nunca en ficheros del repo.
 
 ### Tokens de InfluxDB (mínimo privilegio)
 
-Con InfluxDB levantado y `.env` relleno (org, bucket y token admin):
+Con InfluxDB levantado y `.env` relleno (org, bucket y token admin). **En una
+instalación desde cero, deja vacías** `GRAFANA/NODERED/LOADER_INFLUXDB_TOKEN`
+(así vienen en `.env.example`): el script es idempotente y omite las variables
+que ya tienen valor, de modo que unos tokens copiados de otro InfluxDB quedarían
+inválidos (401) sin avisar.
+
+Opción A — con el CLI `influx` instalado en el equipo:
 
 ```bash
 ./scripts/create-tokens.sh
 ```
 
-Genera un token de solo lectura para Grafana y dos de solo escritura (Node-RED y loader), y los guarda en `.env` sin duplicar líneas. Es idempotente: si la variable ya tiene valor, no crea otro token. Nunca muestra los valores por pantalla.
+Opción B — sin instalar nada (usa el CLI dentro del contenedor):
+
+```bash
+set -a && source .env && set +a
+docker exec aeroadd-influxdb influx auth create --org "$INFLUXDB_INIT_ORG" \
+  --token "$INFLUXDB_ADMIN_TOKEN" --description "grafana-read" --read-buckets
+docker exec aeroadd-influxdb influx auth create --org "$INFLUXDB_INIT_ORG" \
+  --token "$INFLUXDB_ADMIN_TOKEN" --description "nodered-write" --write-buckets
+docker exec aeroadd-influxdb influx auth create --org "$INFLUXDB_INIT_ORG" \
+  --token "$INFLUXDB_ADMIN_TOKEN" --description "loader-write" --write-buckets
+```
+
+Pega cada token generado en su variable de `.env` (`GRAFANA/NODERED/LOADER_INFLUXDB_TOKEN`).
 
 Después levanta (o reinicia) el resto para que Grafana recoja su token, ya que el datasource se provisiona al arrancar:
 
@@ -79,6 +118,8 @@ docker compose up -d --build
 # si Grafana ya estaba levantada:
 docker compose restart grafana
 ```
+
+Ojo: `down -v` borra los datos de InfluxDB y con ellos los tokens generados. Tras un `down -v` hay que borrar las líneas `*_INFLUXDB_TOKEN` de `.env` (dejarlas vacías) y volver a ejecutar `create-tokens.sh`; si ya tienen valor el script las omite y quedan tokens inválidos (401).
 
 ## Cómo lanzarlo
 
@@ -91,6 +132,19 @@ docker compose down     # detiene la pila
 ```
 
 Nota: `loader` sigue siendo un esqueleto funcional (heartbeat); la ingesta real queda pendiente. Toda la pila arranca con valores de ejemplo.
+
+### Carga histórica (CSV de junio → InfluxDB)
+
+El dashboard de análisis de clientes necesita el histórico. Con la pila levantada:
+
+```bash
+set -a && source .env && set +a
+INFLUX_TOKEN="$INFLUXDB_ADMIN_TOKEN" INFLUX_URL="http://localhost:8086" \
+  INFLUXDB_INIT_ORG="$INFLUXDB_INIT_ORG" \
+  python3.12 scripts/load-captaciones.py
+```
+
+Lee `BDA/ImporCsvPandas/captaciones_junio_2026.csv` (~500K filas), lo limpia igual que el notebook del equipo y lo sube al bucket `captaciones_julio` en lotes de 10.000. Tarda unos minutos; es idempotente (re-ejecutarlo reescribe los mismos puntos).
 
 ### Verificar que todo responde
 
@@ -118,6 +172,53 @@ cp .env.example .env   # si aún no existe; rellenar a mano usuario, contraseña
 docker compose up -d influxdb
 docker compose logs -f influxdb
 ```
+
+## Cómo se utiliza
+
+### Accesos
+
+| Servicio | URL | Credenciales |
+|----------|-----|--------------|
+| Grafana | http://localhost:3000 | acceso anónimo como Viewer (sin login); admin `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` de `.env` |
+| Node-RED | http://localhost:1880 | sin autenticación |
+| InfluxDB | http://localhost:8086 | `INFLUXDB_INIT_USERNAME` / `INFLUXDB_INIT_PASSWORD` de `.env` |
+
+### Dashboards (Grafana → carpeta AeroAdd)
+
+| Dashboard | Bucket origen | Rango de tiempo a usar |
+|-----------|---------------|------------------------|
+| Análisis de clientes | `captaciones_julio` (histórico) | **junio 2026** (`2026-06-01 → 2026-07-01`) o *Last 90 days*; con el rango por defecto reciente sale NoData porque esos datos son de junio |
+| Monitorización tiempo real | `captaciones_tiemporeal` | reciente (*Last 1–6 hours*); lo alimenta el simulador WiFi de Node-RED |
+| Ventas aeropuerto | `captaciones_tiemporeal` + `contexto_madrid` | reciente; lo alimenta el simulador de ventas + Open-Meteo |
+| Oportunidades publicitarias | `captaciones_tiemporeal` + `contexto_madrid` | reciente |
+
+Los dashboards se provisionan solos desde `services/grafana/provisioning/dashboards/` y Grafana los recarga cada 10 s al modificar los JSON. Regla general ante un NoData: comprobar que el **rango del selector** cubre los datos (histórico = junio; simuladores = ahora).
+
+### Node-RED
+
+Cada pestaña es un pipeline independiente con su propio ritmo (inyectores `cada 3 h`, `cada 60 s`, etc.). Para forzar una ejecución inmediata sin esperar al temporizador: abrir el flow y pulsar el botón del nodo `inject`, o por API:
+
+```bash
+curl -X POST http://localhost:1880/inject/<id-del-nodo-inject>
+```
+
+Los writes a InfluxDB se hacen por HTTP (line protocol) con el token `NODERED_INFLUXDB_TOKEN`. Si un flow falla por credenciales, el error sale en `docker compose logs nodered`.
+
+### Consultar InfluxDB a mano
+
+```bash
+set -a && source .env && set +a
+docker exec aeroadd-influxdb influx bucket list --token "$INFLUXDB_ADMIN_TOKEN" --org "$INFLUXDB_INIT_ORG"
+docker exec aeroadd-influxdb influx query --token "$INFLUXDB_ADMIN_TOKEN" --org "$INFLUXDB_INIT_ORG" \
+  'from(bucket:"captaciones_tiemporeal") |> range(start:-1h) |> limit(n:5)'
+```
+
+## Resolución de problemas
+
+- **InfluxDB en bucle `unhealthy` (`failed to exec ... 01-create-buckets.sh: No such file or directory`)**: el script tiene finales CRLF; el kernel del contenedor no encuentra el intérprete `/bin/bash\r`. Pasar a LF (`sed -i 's/\r$//'`) y levantar de cero: `docker compose down -v && docker compose up -d`.
+- **`401 Unauthorized` en Grafana o Node-RED**: los tokens de `.env` no existen en ese InfluxDB (pasa siempre tras un `down -v`). Vaciar las líneas `GRAFANA/NODERED/LOADER_INFLUXDB_TOKEN`, ejecutar `./scripts/create-tokens.sh` y reiniciar (`docker compose up -d grafana nodered`).
+- **NoData con datos existentes**: casi siempre es el rango de tiempo del dashboard (ver tabla de arriba) o el filtro de variable (`tipo_tienda`).
+- **`type conflict: float != int` en un panel Flux**: algún campo entero se compara con un literal decimal (`== 1.0`) o se mezcla con floats en un `if/else`. Envolver el campo con `float(v: ...)` en la query del panel.
 
 ## MCP de Grafana (una instancia por rol)
 
