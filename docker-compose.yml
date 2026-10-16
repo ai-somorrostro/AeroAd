@@ -51,6 +51,12 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-ejemplo-usuario}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-CHANGEME}
       - GF_USERS_ALLOW_SIGN_UP=false
+      # Acceso anonimo de solo lectura: abrir los dashboards en el navegador
+      # sin login. El rol anonimo es Viewer de la organizacion principal;
+      # los permisos por rol los sigue aplicando el MCP con su service account.
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
     depends_on:
       influxdb:
         condition: service_healthy
@@ -82,6 +88,7 @@ services:
       - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
       - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
       - INFLUXDB_TOKEN=${NODERED_INFLUXDB_TOKEN:-CAMBIAME} # token de escritura (scripts/create-tokens.sh)
+      - RAPIDAPI_KEY=${RAPIDAPI_KEY:-} # clave AeroDataBox (llegadas); sin ella ese pipeline queda inactivo
     depends_on:
       influxdb:
         condition: service_healthy
