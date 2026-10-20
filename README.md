@@ -28,7 +28,7 @@ AeroAdd/
 ├── data/                   # datasets (gitignorados salvo .gitkeep)
 ├── notebooks/              # parte SBD
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
-└── scripts/                          # create-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP)
+└── scripts/                          # create-influx-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP)
 ```
 
 ## Servicios
@@ -60,25 +60,23 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
    ```bash
    cp .env.example .env
    ```
-2. Rellenar a mano en `.env` los valores marcados con TODO: usuarios, contraseñas, organización, bucket, token, URLs y puertos. El archivo `.env` no se sube al repositorio.
+2. Rellenar en `.env` lo que cambie en tu despliegue local: usuarios, contraseñas,
+   organización, token admin de InfluxDB, puertos y la `RAPIDAPI_KEY` del pipeline de
+   llegadas. El archivo `.env` no se sube al repositorio.
 
-### Tokens de InfluxDB (mínimo privilegio)
+**No hay que rellenar tokens de servicio a mano**: al levantar la pila, los
+contenedores de inicialización los crean y los comparten por el volumen
+`mcp-secrets`:
 
-Con InfluxDB levantado y `.env` relleno (org, bucket y token admin):
+- `influx-tokens-init` (imagen `influxdb:2.7`) genera tokens de InfluxDB de mínimo
+  privilegio — Grafana solo lectura (buckets de los dashboards), Node-RED y loader
+  solo escritura (sus buckets) — y deja un fichero por token en el volumen. Es
+  idempotente y sensible a los buckets: si cambia la lista, borra los tokens
+  obsoletos y crea unos nuevos con los permisos actualizados.
+- `grafana-sa-init` genera las service accounts del MCP (ver sección MCP).
 
-```bash
-./scripts/create-tokens.sh
-```
-
-Genera un token de solo lectura para Grafana y dos de solo escritura (Node-RED y loader), y los guarda en `.env` sin duplicar líneas. Es idempotente: si la variable ya tiene valor, no crea otro token. Nunca muestra los valores por pantalla.
-
-Después levanta (o reinicia) el resto para que Grafana recoja su token, ya que el datasource se provisiona al arrancar:
-
-```bash
-docker compose up -d --build
-# si Grafana ya estaba levantada:
-docker compose restart grafana
-```
+Los servicios leen sus tokens de esos ficheros: Grafana lo aprovisiona con
+`$__file{...}`, Node-RED lo exporta su entrypoint y el loader lo lee en Python.
 
 ## Cómo lanzarlo
 
@@ -90,7 +88,9 @@ docker compose logs -f
 docker compose down     # detiene la pila
 ```
 
-Nota: `loader` sigue siendo un esqueleto funcional (heartbeat); la ingesta real queda pendiente. Toda la pila arranca con valores de ejemplo.
+Nota: el `loader` carga el histórico de captaciones (CSV de `BDA/ImporCsvPandas`,
+montado en `/data`) en el bucket `captaciones_julio` y escribe un heartbeat.
+Toda la pila arranca con valores de ejemplo.
 
 ### Verificar que todo responde
 
@@ -114,8 +114,8 @@ docker compose up -d nodered
 Para levantar solo InfluxDB (ya listo):
 
 ```bash
-cp .env.example .env   # si aún no existe; rellenar a mano usuario, contraseña, org, bucket y token
-docker compose up -d influxdb
+cp .env.example .env   # si aún no existe; rellenar usuario, contraseña, org, token admin y buckets
+docker compose up -d influxdb influx-tokens-init
 docker compose logs -f influxdb
 ```
 
