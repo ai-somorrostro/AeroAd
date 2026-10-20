@@ -251,7 +251,7 @@
       {
         "name": "RAPIDAPI_KEY",
         "value": "RAPIDAPI_KEY",
-        "type": "str"
+        "type": "env"
       }
     ]
   },
@@ -260,7 +260,7 @@
     "type": "comment",
     "z": "c70d8ba534742c29",
     "name": "AeroDataBox · llegadas a Madrid-Barajas → InfluxDB",
-    "info": "Pon tu clave en las propiedades de la pestaña (variable RAPIDAPI_KEY).",
+    "info": "Pon tu clave en .env (RAPIDAPI_KEY=...); el tab la lee de la variable de entorno del contenedor.",
     "x": 270,
     "y": 40,
     "wires": []
@@ -295,7 +295,7 @@
     "type": "function",
     "z": "c70d8ba534742c29",
     "name": "preparar petición",
-    "func": "// Prepara la petición a AeroDataBox (RapidAPI): llegadas a Madrid-Barajas (MAD) en las próximas ~12 h.\n// El endpoint FIDS admite como máximo 12 h por consulta, y las horas se piden en hora local del aeropuerto (Madrid).\nconst clave = env.get('RAPIDAPI_KEY');\nif (!clave) { node.error('Falta la variable de entorno RAPIDAPI_KEY (doble clic en la pestaña > Variables de entorno)'); return null; }\n\nconst ahora = Date.now();\nconst hasta = ahora + 719 * 60000;                               // 11 h 59 min (límite del endpoint: 12 h)\nconst fmt = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });\nconst local = (ms) => fmt.format(new Date(ms)).replace(' ', 'T');   // AAAA-MM-DDTHH:mm\nconst d = local(ahora), h = local(hasta);\nif (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(d) || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(h)) { node.error('Formato de hora inesperado: ' + d + ' / ' + h); return null; }\n\nmsg.ventana = { desde: ahora, hasta: hasta };                    // ventana que cubrirá esta consulta (se usa para calcular la cobertura)\nmsg.headers = { 'x-rapidapi-key': clave, 'x-rapidapi-host': 'aerodatabox.p.rapidapi.com' };\nmsg.url = 'https://aerodatabox.p.rapidapi.com/flights/airports/iata/MAD/' + d + '/' + h +\n    '?direction=Arrival&withLeg=false&withCancelled=true&withCodeshared=false&withCargo=false&withPrivate=false&withLocation=false';\nreturn msg;\n",
+    "func": "// Prepara la petición a AeroDataBox (RapidAPI): llegadas a Madrid-Barajas (MAD) en las próximas ~12 h.\n// El endpoint FIDS admite como máximo 12 h por consulta, y las horas se piden en hora local del aeropuerto (Madrid).\nconst clave = env.get('RAPIDAPI_KEY');\nif (!clave) { node.error('Falta la variable de entorno RAPIDAPI_KEY (rellenala en .env y reinicia la pila)'); return null; }\n\nconst ahora = Date.now();\nconst hasta = ahora + 719 * 60000;                               // 11 h 59 min (límite del endpoint: 12 h)\nconst fmt = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });\nconst local = (ms) => fmt.format(new Date(ms)).replace(' ', 'T');   // AAAA-MM-DDTHH:mm\nconst d = local(ahora), h = local(hasta);\nif (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(d) || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(h)) { node.error('Formato de hora inesperado: ' + d + ' / ' + h); return null; }\n\nmsg.ventana = { desde: ahora, hasta: hasta };                    // ventana que cubrirá esta consulta (se usa para calcular la cobertura)\nmsg.headers = { 'x-rapidapi-key': clave, 'x-rapidapi-host': 'aerodatabox.p.rapidapi.com' };\nmsg.url = 'https://aerodatabox.p.rapidapi.com/flights/airports/iata/MAD/' + d + '/' + h +\n    '?direction=Arrival&withLeg=false&withCancelled=true&withCodeshared=false&withCargo=false&withPrivate=false&withLocation=false';\nreturn msg;\n",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
