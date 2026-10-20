@@ -23,7 +23,7 @@ AeroAdd/
 │   │   ├── Dockerfile                # base fijada + node-red-contrib-influxdb
 │   │   ├── package.json              # dependencia del contrib (versión fijada)
 │   │   └── flows.json                # simulador WiFi, API Open-Meteo, API llegadas Barajas, ventas, smoke test
-│   ├── loader/             # esqueleto: influxdb-client + heartbeat (pandas lo añadirá la ingesta real)
+│   ├── loader/             # one-shot: carga el histórico del CSV (pandas/influxdb-client) + heartbeat
 │   │   ├── Dockerfile
 │   │   ├── requirements.txt
 │   │   └── src/main.py
@@ -32,17 +32,17 @@ AeroAdd/
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
 ├── BDA/ImporCsvPandas/     # CSV históricos (captaciones junio, rechazadas, dataset integrado)
 ├── generadores/            # generadores sintéticos (500K captaciones, ventas)
-└── scripts/                          # create-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP); load-captaciones.py (carga histórica del CSV a InfluxDB)
+└── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service accounts del MCP)
 ```
 
 ## Servicios
 
 | Servicio  | Imagen / build         | Puerto (ejemplo, ver `.env`) | Estado |
 |-----------|------------------------|------------------------------|--------|
-| influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
+| influxdb  | `influxdb:2.7`         | `8086`                       | Se inicializa solo en el arranque (usuario, contraseña, org, bucket y tokens via `docker compose up -d --build`); credenciales en `.env` (las genera `scripts/setup-env.sh`) |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
-| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | 5 flows: simulador WiFi → `captaciones_tiemporeal`, Open-Meteo → `contexto_madrid`, llegadas Barajas (AeroDataBox/RapidAPI) → `contexto_madrid`, simulador ventas → `captaciones_tiemporeal`, smoke test. Token de escritura por `.env` (`NODERED_INFLUXDB_TOKEN`); la API de vuelos necesita además `RAPIDAPI_KEY` (ver Configuración) |
-| loader    | `build: ./services/loader` | — (sin puerto)             | Esqueleto one-shot: heartbeat a Influx; ingesta real pendiente |
+| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | 5 flows: simulador WiFi → `captaciones_tiemporeal`, Open-Meteo → `contexto_madrid`, llegadas Barajas (AeroDataBox/RapidAPI) → `contexto_madrid`, simulador ventas → `captaciones_tiemporeal`, smoke test. El token de escritura lo exporta el entrypoint leyendo el volumen `mcp-secrets`; la API de vuelos necesita además `RAPIDAPI_KEY` (ver Configuración) |
+| loader    | `build: ./services/loader` | — (sin puerto)             | One-shot: carga el histórico del CSV de junio (~461K filas) en `captaciones_julio` y escribe un heartbeat; su token de escritura lo lee del volumen `mcp-secrets` |
 | mcp-direccion | `grafana/mcp-grafana:2.0.2` | `8000` | MCP oficial; rol **cúpula directiva** (Viewer), service account propia |
 | mcp-analisis  | `grafana/mcp-grafana:2.0.2` | `8001` | MCP oficial; rol **análisis** (Viewer), service account propia |
 | mcp-it        | `grafana/mcp-grafana:2.0.2` | `8002` | MCP oficial; rol **IT** (Viewer por ahora), service account propia |
@@ -57,69 +57,80 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
 - Docker
 - Docker Compose (v2, plugin `docker compose`)
 - Git
-- Python 3.12 con `pandas` e `influxdb-client` (solo para la carga histórica del CSV):
-  ```bash
-  python3.12 -m pip install pandas influxdb-client
-  ```
+
+(La imagen del loader ya lleva `pandas` e `influxdb-client`, no hace falta instalar nada más en el equipo.)
 
 ## Configuración
+
+**Forma recomendada (sin escribir ninguna credencial a mano):**
+
+```bash
+./scripts/setup-env.sh   # genera .env con contraseñas y tokens aleatorios (chmod 600)
+```
+
+- Si no existe `.env`, lo crea desde `.env.example`; si ya existe, **solo rellena
+  las variables vacías o con placeholder** (`CAMBIAME`/`CHANGEME`), nunca pisa tus valores.
+- Genera aleatorios para: `INFLUXDB_INIT_PASSWORD`, `INFLUXDB_ADMIN_TOKEN`,
+  `GRAFANA_ADMIN_PASSWORD` y los tokens de llamante del MCP
+  (`MCP_GRAFANA_SERVER_TOKEN_*`).
+- Pide la `RAPIDAPI_KEY` una sola vez por teclado (o Enter para dejarla vacía:
+  el pipeline de llegadas queda inactivo, el resto de la pila funciona).
+- No imprime ninguna credencial por pantalla; el fichero queda local
+  (chmod 600) y nunca se sube al repositorio.
+
+Alternativa manual:
 
 1. Copiar la plantilla de entorno:
    ```bash
    cp .env.example .env
    ```
-2. Rellenar a mano en `.env` los valores marcados con TODO: usuarios, contraseñas, organización, bucket, token, URLs y puertos. El archivo `.env` no se sube al repositorio.
+2. Rellenar en `.env` lo que cambie en tu despliegue local: usuarios, contraseñas,
+   organización, token admin de InfluxDB, puertos y la `RAPIDAPI_KEY` del pipeline de
+   llegadas. El archivo `.env` no se sube al repositorio.
 3. **Importante en Windows/WSL**: `.env` y los scripts `.sh` deben tener finales de línea **LF**, no CRLF. Un CRLF en `services/influxdb/init/01-create-buckets.sh` impide arrancar InfluxDB (ver Resolución de problemas). Conversión rápida:
    ```bash
    sed -i 's/\r$//' .env services/influxdb/init/*.sh scripts/*.sh
    ```
 
+**No hay que rellenar tokens de servicio a mano**: al levantar la pila, los
+contenedores de inicialización los crean y los comparten por el volumen
+`mcp-secrets` (ver más abajo).
+
 ### Clave de la API de vuelos (AeroDataBox / RapidAPI)
 
-El flow de llegadas a Barajas la lee de la **variable de entorno de la pestaña** en Node-RED, no solo del contenedor. Hay que ponerla en los dos sitios:
+El flow de llegadas a Barajas la lee de la **variable de entorno del contenedor**:
 
-1. En `.env`: `RAPIDAPI_KEY=<tu clave>` (sin comillas).
-2. En Node-RED (`http://localhost:1880`): doble clic en la pestaña `3 · API llegadas a Barajas (AeroDataBox)` → *Variables de entorno* → pon la clave en `RAPIDAPI_KEY` → *Deploy*. (Equivale a editar el campo `env` de esa pestaña en `flows.json`.)
+- Con `scripts/setup-env.sh`: la pide una sola vez por teclado y la deja en
+  `RAPIDAPI_KEY` de `.env`; el compose se la inyecta a Node-RED
+  (`RAPIDAPI_KEY=${RAPIDAPI_KEY:-}`).
+- Con `.env` a mano: escribe `RAPIDAPI_KEY=<tu clave>` (sin comillas) y levanta/reinicia.
 
-Sin clave válida ese pipeline no trae horarios; el resto de flows siguen funcionando. No subir claves reales al repositorio: van solo en `.env` (gitignorado) y en el volumen `nodered-data`, nunca en ficheros del repo.
+Sin clave válida ese pipeline no trae horarios; el resto de flows siguen funcionando.
+No subir claves reales al repositorio (el fichero `BDA/ApikeyFlights.txt` fue retirado
+por seguridad): la clave va solo en `.env`, que está gitignorado.
 
 ### Tokens de InfluxDB (mínimo privilegio)
 
-Con InfluxDB levantado y `.env` relleno (org, bucket y token admin). **En una
-instalación desde cero, deja vacías** `GRAFANA/NODERED/LOADER_INFLUXDB_TOKEN`
-(así vienen en `.env.example`): el script es idempotente y omite las variables
-que ya tienen valor, de modo que unos tokens copiados de otro InfluxDB quedarían
-inválidos (401) sin avisar.
+Los genera automáticamente el efímero `influx-tokens-init` al levantar la pila, con
+el token admin de `.env` (`INFLUXDB_ADMIN_TOKEN`). Es idempotente y:
 
-Opción A — con el CLI `influx` instalado en el equipo:
+- Crea los buckets de `INFLUXDB_EXTRA_BUCKETS` vía `01-create-buckets.sh` y el
+  script `scripts/create-influx-tokens.sh` deja un fichero por token en el volumen
+  `mcp-secrets`: uno con **solo lectura** de los buckets de los dashboards
+  (`GRAFANA_READ_BUCKETS`), y otros de **solo escritura** para Node-RED
+  (`NODERED_WRITE_BUCKETS`) y el loader (`LOADER_WRITE_BUCKETS`).
+- Si cambia la lista de buckets, regenera los tokens con los permisos actualizados
+  y borra los obsoletos.
 
-```bash
-./scripts/create-tokens.sh
-```
+Los servicios leen sus tokens de esos ficheros: Grafana lo aprovisiona con
+`$__file{...}` al arrancar, Node-RED lo exporta su entrypoint (`services/nodered/
+aeroadd-entrypoint.sh`) y el loader lo lee en Python (`INFLUXDB_TOKEN_FILE`).
+No hace falta pegar nada en `LOADER_INFLUXDB_TOKEN` ni en variables similares.
 
-Opción B — sin instalar nada (usa el CLI dentro del contenedor):
-
-```bash
-set -a && source .env && set +a
-docker exec aeroadd-influxdb influx auth create --org "$INFLUXDB_INIT_ORG" \
-  --token "$INFLUXDB_ADMIN_TOKEN" --description "grafana-read" --read-buckets
-docker exec aeroadd-influxdb influx auth create --org "$INFLUXDB_INIT_ORG" \
-  --token "$INFLUXDB_ADMIN_TOKEN" --description "nodered-write" --write-buckets
-docker exec aeroadd-influxdb influx auth create --org "$INFLUXDB_INIT_ORG" \
-  --token "$INFLUXDB_ADMIN_TOKEN" --description "loader-write" --write-buckets
-```
-
-Pega cada token generado en su variable de `.env` (`GRAFANA/NODERED/LOADER_INFLUXDB_TOKEN`).
-
-Después levanta (o reinicia) el resto para que Grafana recoja su token, ya que el datasource se provisiona al arrancar:
-
-```bash
-docker compose up -d --build
-# si Grafana ya estaba levantada:
-docker compose restart grafana
-```
-
-Ojo: `down -v` borra los datos de InfluxDB y con ellos los tokens generados. Tras un `down -v` hay que borrar las líneas `*_INFLUXDB_TOKEN` de `.env` (dejarlas vacías) y volver a ejecutar `create-tokens.sh`; si ya tienen valor el script las omite y quedan tokens inválidos (401).
+Ojo: `down -v` borra los datos y el volumen de secretos, pero **no hay que hacer
+nada**: en el siguiente `up` todo se re-crea (tokens incluidos). Único caso
+manual: si rellenas el fallback `LOADER_INFLUXDB_TOKEN` a mano, bórralo tras un
+`down -v` (quedaría inválido y el script automático lo respetaría).
 
 ## Cómo lanzarlo
 
@@ -131,20 +142,22 @@ docker compose logs -f
 docker compose down     # detiene la pila
 ```
 
-Nota: `loader` sigue siendo un esqueleto funcional (heartbeat); la ingesta real queda pendiente. Toda la pila arranca con valores de ejemplo.
+Nota: el `loader` carga el histórico de captaciones (CSV de `BDA/ImporCsvPandas`,
+montado en `/data`) en el bucket `captaciones_julio` y escribe un heartbeat.
+Toda la pila arranca con valores de ejemplo.
 
 ### Carga histórica (CSV de junio → InfluxDB)
 
-El dashboard de análisis de clientes necesita el histórico. Con la pila levantada:
+Se hace sola al levantar: el `loader` es un servicio one-shot que lee
+`BDA/ImporCsvPandas/captaciones_junio_2026.csv` (~461K filas), lo limpia igual que el
+notebook del equipo y lo sube al bucket `captaciones_julio` en lotes. Tarda unos
+minutos; al terminar sale del contenedor con código 0.
+
+Para repetirla sin re-crear la pila:
 
 ```bash
-set -a && source .env && set +a
-INFLUX_TOKEN="$INFLUXDB_ADMIN_TOKEN" INFLUX_URL="http://localhost:8086" \
-  INFLUXDB_INIT_ORG="$INFLUXDB_INIT_ORG" \
-  python3.12 scripts/load-captaciones.py
+docker compose run --rm loader   # re-escribe los mismos puntos (idempotente)
 ```
-
-Lee `BDA/ImporCsvPandas/captaciones_junio_2026.csv` (~500K filas), lo limpia igual que el notebook del equipo y lo sube al bucket `captaciones_julio` en lotes de 10.000. Tarda unos minutos; es idempotente (re-ejecutarlo reescribe los mismos puntos).
 
 ### Verificar que todo responde
 
@@ -168,8 +181,8 @@ docker compose up -d nodered
 Para levantar solo InfluxDB (ya listo):
 
 ```bash
-cp .env.example .env   # si aún no existe; rellenar a mano usuario, contraseña, org, bucket y token
-docker compose up -d influxdb
+./scripts/setup-env.sh                 # crea .env con todas las credenciales, si aún no existe
+docker compose up -d influxdb influx-tokens-init
 docker compose logs -f influxdb
 ```
 
@@ -202,7 +215,7 @@ Cada pestaña es un pipeline independiente con su propio ritmo (inyectores `cada
 curl -X POST http://localhost:1880/inject/<id-del-nodo-inject>
 ```
 
-Los writes a InfluxDB se hacen por HTTP (line protocol) con el token `NODERED_INFLUXDB_TOKEN`. Si un flow falla por credenciales, el error sale en `docker compose logs nodered`.
+Los writes a InfluxDB se hacen por HTTP (line protocol) con el token de escritura que el entrypoint exporta desde el volumen `mcp-secrets`. Si un flow falla por credenciales, el error sale en `docker compose logs nodered`.
 
 ### Consultar InfluxDB a mano
 
@@ -216,7 +229,7 @@ docker exec aeroadd-influxdb influx query --token "$INFLUXDB_ADMIN_TOKEN" --org 
 ## Resolución de problemas
 
 - **InfluxDB en bucle `unhealthy` (`failed to exec ... 01-create-buckets.sh: No such file or directory`)**: el script tiene finales CRLF; el kernel del contenedor no encuentra el intérprete `/bin/bash\r`. Pasar a LF (`sed -i 's/\r$//'`) y levantar de cero: `docker compose down -v && docker compose up -d`.
-- **`401 Unauthorized` en Grafana o Node-RED**: los tokens de `.env` no existen en ese InfluxDB (pasa siempre tras un `down -v`). Vaciar las líneas `GRAFANA/NODERED/LOADER_INFLUXDB_TOKEN`, ejecutar `./scripts/create-tokens.sh` y reiniciar (`docker compose up -d grafana nodered`).
+- **`401 Unauthorized` en Grafana o Node-RED**: no debería pasar salvo que borres el volumen `mcp-secrets` sin recrear los init. Los tokens se regeneran solos en el siguiente `docker compose up -d`; si el problema persiste, `docker compose down -v && docker compose up -d --build` (re-carga el histórico incluido).
 - **NoData con datos existentes**: casi siempre es el rango de tiempo del dashboard (ver tabla de arriba) o el filtro de variable (`tipo_tienda`).
 - **`type conflict: float != int` en un panel Flux**: algún campo entero se compara con un literal decimal (`== 1.0`) o se mezcla con floats en un `if/else`. Envolver el campo con `float(v: ...)` en la query del panel.
 
@@ -228,9 +241,11 @@ agente hereda los permisos de ese rol y no puede suplantar a otro.
 
 Las service accounts y sus tokens se crean solas al levantar la pila: el servicio
 efímero `grafana-sa-init` ejecuta `scripts/create-grafana-sa.sh` (idempotente) y deja
-un fichero de token por rol en el volumen `mcp-secrets`. Solo hay que rellenar en
-`.env` el usuario/contraseña admin de Grafana y los **tokens de llamante** por rol
-(no se generan solos: son la credencial con la que el cliente habla con cada MCP).
+un fichero de token por rol en el volumen `mcp-secrets`. En `.env` solo hay que
+poner el usuario/contraseña admin de Grafana y los **tokens de llamante** por rol
+(no se generan solos: son la credencial con la que el cliente habla con cada MCP;
+`scripts/setup-env.sh` los genera automáticamente si están vacíos o como
+`CHANGEME`).
 
 ### Conectar un cliente MCP
 
