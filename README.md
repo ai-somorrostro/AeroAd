@@ -28,14 +28,14 @@ AeroAdd/
 ├── data/                   # datasets (gitignorados salvo .gitkeep)
 ├── notebooks/              # parte SBD
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
-└── scripts/                          # create-influx-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP)
+└── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB); create-grafana-sa.sh (service accounts del MCP)
 ```
 
 ## Servicios
 
 | Servicio  | Imagen / build         | Puerto (ejemplo, ver `.env`) | Estado |
 |-----------|------------------------|------------------------------|--------|
-| influxdb  | `influxdb:2.7`         | `8086`                       | Listo para levantar (`up -d influxdb`); rellenar a mano en `.env` usuario, contraseña, org, bucket y token |
+| influxdb  | `influxdb:2.7`         | `8086`                       | Se inicializa solo en el arranque (usuario, contraseña, org, bucket y tokens via `docker compose up -d --build`); credenciales en `.env` (las genera `scripts/setup-env.sh`) |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
 | nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | Flow de prueba que escribe en Influx con el token de escritura; puerto y token por `.env` |
 | loader    | `build: ./services/loader` | — (sin puerto)             | Esqueleto one-shot: heartbeat a Influx; ingesta real pendiente |
@@ -55,6 +55,24 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
 - Git
 
 ## Configuración
+
+**Forma recomendada (sin escribir ninguna credencial a mano):**
+
+```bash
+./scripts/setup-env.sh   # genera .env con contraseñas y tokens aleatorios (chmod 600)
+```
+
+- Si no existe `.env`, lo crea desde `.env.example`; si ya existe, **solo rellena
+  las variables vacías o con placeholder** (`CAMBIAME`/`CHANGEME`), nunca pisa tus valores.
+- Genera aleatorios para: `INFLUXDB_INIT_PASSWORD`, `INFLUXDB_ADMIN_TOKEN`,
+  `GRAFANA_ADMIN_PASSWORD` y los tokens de llamante del MCP
+  (`MCP_GRAFANA_SERVER_TOKEN_*`).
+- Pide la `RAPIDAPI_KEY` una sola vez por teclado (o Enter para dejarla vacía:
+  el pipeline de llegadas queda inactivo, el resto de la pila funciona).
+- No imprime ninguna credencial por pantalla; el fichero queda local
+  (chmod 600) y nunca se sube al repositorio.
+
+Alternativa manual:
 
 1. Copiar la plantilla de entorno:
    ```bash
@@ -114,7 +132,7 @@ docker compose up -d nodered
 Para levantar solo InfluxDB (ya listo):
 
 ```bash
-cp .env.example .env   # si aún no existe; rellenar usuario, contraseña, org, token admin y buckets
+./scripts/setup-env.sh                 # crea .env con todas las credenciales, si aún no existe
 docker compose up -d influxdb influx-tokens-init
 docker compose logs -f influxdb
 ```
@@ -127,9 +145,11 @@ agente hereda los permisos de ese rol y no puede suplantar a otro.
 
 Las service accounts y sus tokens se crean solas al levantar la pila: el servicio
 efímero `grafana-sa-init` ejecuta `scripts/create-grafana-sa.sh` (idempotente) y deja
-un fichero de token por rol en el volumen `mcp-secrets`. Solo hay que rellenar en
-`.env` el usuario/contraseña admin de Grafana y los **tokens de llamante** por rol
-(no se generan solos: son la credencial con la que el cliente habla con cada MCP).
+un fichero de token por rol en el volumen `mcp-secrets`. En `.env` solo hay que
+poner el usuario/contraseña admin de Grafana y los **tokens de llamante** por rol
+(no se generan solos: son la credencial con la que el cliente habla con cada MCP;
+`scripts/setup-env.sh` los genera automáticamente si están vacíos o como
+`CHANGEME`).
 
 ### Conectar un cliente MCP
 
