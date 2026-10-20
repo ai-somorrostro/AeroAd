@@ -161,6 +161,34 @@ deshabilitadas.
 - `down -v` borra el volumen `mcp-secrets`: en el siguiente `up` el init regenera los
   tokens automáticamente.
 
+## Demo de hotspot (portal cautivo)
+
+La carpeta `demo-hotspotserver/` es una demo de portal cautivo ("Free WiFi") que actúa
+como fuente de datos de la ingesta. Es estática (HTML/CSS/JS, sin framework):
+
+- `index.html` — pantalla de acceso ("Free WiFi").
+- `survey.html` — encuesta (edad, nombre, email y país de origen).
+- `terms.html` — términos y condiciones.
+- `script.js` — guarda la encuesta en `localStorage` y la envía al servidor.
+- `collect.js` — recopila los datos de la encuesta más metadatos del dispositivo (SO,
+  idioma, fabricante) y los serializa a CSV en formato compatible con InfluxDB.
+- `i18n.js` + `translations.js` — textos en cuatro idiomas (`en`, `fr`, `es`, `ru`).
+
+### Servidor Node (`server.js`)
+
+Servidor HTTP de Node.js sin dependencias externas, que se arranca con:
+
+```bash
+node server.js
+```
+
+- Escucha en `0.0.0.0:8081` y expone un único endpoint: `POST /collect`.
+- Guarda lo recibido en un CSV por día (`YYYY-MM-DD.csv`) dentro de `demo-hotspotserver/data/`.
+- No forma parte de la pila de `docker-compose.yml`; se ejecuta de forma independiente.
+
+Nota: `collect.js` apunta por defecto a `http://127.0.0.1:8080/collect` y `server.js`
+escucha en `8081`; ajusta una de las dos para que coincidan.
+
 ## Autores
 
 [Ibai Bonilla](https://github.com/IbaiBo) \
