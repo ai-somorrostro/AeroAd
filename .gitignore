@@ -228,3 +228,6 @@ grafana-data/
 nodered-data/
 .opencode/
 *.log
+
+# Secretos (gestión por .env / variables; jamás en el repo)
+ApikeyFlights.txt
