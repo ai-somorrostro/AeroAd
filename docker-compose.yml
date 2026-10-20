@@ -44,6 +44,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./services/grafana/provisioning:/etc/grafana/provisioning:ro # datasource Flux; TODO: dashboards
+      - mcp-secrets:/shared:ro # token de lectura de InfluxDB (influx-tokens-init)
     env_file:
       - path: .env
         required: false
@@ -60,6 +61,10 @@ services:
     depends_on:
       influxdb:
         condition: service_healthy
+      # El datasource aprovisionado lee el token InfluxDB desde un fichero del
+      # volumen mcp-secrets: sin el init no arranca (provisioning con error).
+      influx-tokens-init:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
@@ -79,6 +84,7 @@ services:
       - "${NODERED_PORT:-1880}:1880"
     volumes:
       - nodered-data:/data
+      - mcp-secrets:/shared:ro # token de escritura de InfluxDB (influx-tokens-init)
     env_file:
       - path: .env
         required: false
@@ -87,31 +93,57 @@ services:
       - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
       - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
       - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
-      - INFLUXDB_TOKEN=${NODERED_INFLUXDB_TOKEN:-CAMBIAME} # token de escritura (scripts/create-tokens.sh)
+      # Token de escritura: lo exporta el entrypoint propio de la imagen desde
+      # /shared/influx-nodered-token (lo genera influx-tokens-init). Si no existe
+      # el fichero, el contenedor arranca y el pipeline de InfluxDB fallará a la
+      # vista en el log de Node-RED.
+      - INFLUXDB_TOKEN_FILE=/shared/influx-nodered-token
       - RAPIDAPI_KEY=${RAPIDAPI_KEY:-} # clave AeroDataBox (llegadas); sin ella ese pipeline queda inactivo
     depends_on:
       influxdb:
         condition: service_healthy
+      influx-tokens-init:
+        condition: service_completed_successfully
+    healthcheck:
+      # wget con 127.0.0.1: en la imagen busybox de Node-RED 'localhost' resuelve a
+      # ::1 y Node-RED solo escucha en IPv4.
+      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:1880/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     restart: unless-stopped
     networks:
       - aeroadd
 
-  # Esqueleto one-shot: verifica InfluxDB y escribe un heartbeat (services/loader).
+  # Esqueleto one-shot: carga el histórico de captaciones (CSV) y verifica InfluxDB
+  # (services/loader). Si falta configuración real, avisa por log y sale con 0.
   loader:
     build:
       context: ./services/loader
     container_name: ${LOADER_CONTAINER_NAME:-aeroadd-loader}
+    volumes:
+      - ./BDA/ImporCsvPandas:/data:ro # CSV del histórico (captaciones_junio_2026.csv)
+      - mcp-secrets:/shared:ro # token de escritura de InfluxDB (influx-tokens-init)
     env_file:
       - path: .env
         required: false
     environment:
       - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
       - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
-      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
-      - INFLUXDB_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CAMBIAME}
+      # Bucket destino: el histórico de captaciones. Ajusta si cambias la
+      # arquitectura (el token del loader solo tiene escritura aquí).
+      - INFLUXDB_BUCKET=${LOADER_INFLUXDB_BUCKET:-captaciones_julio}
+      # Token de mínimo privilegio: lo genera influx-tokens-init y se lee del
+      # fichero (no va en .env). Fallback por .env si alguien prefiere manual.
+      - INFLUXDB_TOKEN=${LOADER_INFLUXDB_TOKEN:-}
+      - INFLUXDB_TOKEN_FILE=/shared/influx-loader-token
+      - LOADER_CSV=${LOADER_CSV:-/data/captaciones_junio_2026.csv}
     depends_on:
       influxdb:
         condition: service_healthy
+      influx-tokens-init:
+        condition: service_completed_successfully
     restart: "no"
     networks:
       - aeroadd
@@ -210,7 +242,8 @@ services:
       - aeroadd
 
   # Init efímero: crea las service accounts Viewer de Grafana (una por rol) y sus
-  # tokens (scripts/create-grafana-sa.sh) en el volumen compartido mcp-secrets.
+  # tokens (scripts/create-grafana-sa.sh) en el volumen compartido mcp-secrets,
+  # donde también dejan los suyos influx-tokens-init y el propio provisioning.
   grafana-sa-init:
     image: curlimages/curl:8.12.1
     container_name: ${GRAFANA_SA_INIT_CONTAINER_NAME:-aeroadd-grafana-sa-init}
@@ -235,6 +268,36 @@ services:
     entrypoint: ["sh", "/scripts/create-grafana-sa.sh"]
     depends_on:
       grafana:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - aeroadd
+
+  # Init efímero: crea los tokens de InfluxDB de mínimo privilegio (uno por
+  # servicio: grafana lee, nodered y loader escriben) y los deja como ficheros
+  # en el volumen compartido mcp-secrets (scripts/create-influx-tokens.sh).
+  # Idempotente y consciente de permisos: si cambia la lista de buckets,
+  # borra los tokens obsoletos del servicio y crea unos nuevos.
+  influx-tokens-init:
+    image: influxdb:2.7
+    container_name: ${INFLUX_TOKENS_INIT_CONTAINER_NAME:-aeroadd-influx-tokens-init}
+    entrypoint: ["bash", "/scripts/create-influx-tokens.sh"]
+    volumes:
+      - mcp-secrets:/shared
+      - ./scripts/create-influx-tokens.sh:/scripts/create-influx-tokens.sh:ro
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086}
+      - INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
+      - INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
+      - INFLUXDB_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN:-CAMBIAME}
+      - GRAFANA_READ_BUCKETS=${GRAFANA_READ_BUCKETS:-captaciones_julio,captaciones_tiemporeal,contexto_madrid}
+      - NODERED_WRITE_BUCKETS=${NODERED_WRITE_BUCKETS:-captaciones_tiemporeal,contexto_madrid}
+      - LOADER_WRITE_BUCKETS=${LOADER_WRITE_BUCKETS:-captaciones_julio}
+    depends_on:
+      influxdb:
         condition: service_healthy
     restart: "no"
     networks:
