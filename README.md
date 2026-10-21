@@ -38,7 +38,7 @@ AeroAdd/
 ├── docs/                   # documentación local (solo .gitkeep)
 ├── notebooks/              # notebooks locales (solo .gitkeep)
 ├── generadores/            # generador_v3.py (500K captaciones) y line_protocol_a_csv.py
-└── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service accounts del MCP)
+└── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias y el CSV histórico si falta); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service accounts del MCP)
 ```
 
 ## Servicios
@@ -63,10 +63,11 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
 - Docker
 - Docker Compose (v2, plugin `docker compose`)
 - Git
-- Python 3 (opcional; solo para regenerar el CSV histórico con `generadores/`)
+- Python 3 (necesario para que `scripts/setup-env.sh` genere el CSV histórico si falta; con `--sin-historico` no hace falta)
 
 (La imagen del loader ya lleva `pandas` e `influxdb-client`, así que para arrancar la
-pila no hace falta instalar Python ni dependencias en el equipo.)
+pila solo hace falta Python en el equipo si quieres que `setup-env.sh` genere el CSV
+histórico; también puedes generarlo a mano o pasar `--sin-historico`.)
 
 ## Configuración
 
@@ -81,6 +82,9 @@ pila no hace falta instalar Python ni dependencias en el equipo.)
 - Genera aleatorios para: `INFLUXDB_INIT_PASSWORD`, `INFLUXDB_ADMIN_TOKEN`,
   `GRAFANA_ADMIN_PASSWORD` y los tokens de llamante del MCP
   (`MCP_GRAFANA_SERVER_TOKEN_*`).
+- Genera el CSV histórico `BDA/ImporCsvPandas/captaciones_junio_2026.csv` si no
+  existe, para que el loader y el dashboard de clientes tengan datos desde el
+  primer `docker compose up`. Usa `--sin-historico` para omitir este paso.
 - Pide la `RAPIDAPI_KEY` una sola vez por teclado (o Enter para dejarla vacía:
   el pipeline de llegadas queda inactivo, el resto de la pila funciona).
 - No imprime ninguna credencial por pantalla; el fichero queda local
@@ -152,14 +156,16 @@ docker compose down     # detiene la pila
 
 Nota: el `loader` carga el histórico de captaciones (CSV de `BDA/ImporCsvPandas`,
 montado en `/data`) en el bucket `captaciones_julio` y escribe un heartbeat.
-Ese CSV **no está versionado**: genéralo antes con los pasos de la sección
-siguiente. Si no existe, el loader avisa y sale con 0 (la pila arranca igual).
+Ese CSV **no está versionado**: `scripts/setup-env.sh` lo genera automáticamente si
+falta (o puedes generarlo a mano con la sección siguiente). Si no existe, el loader
+avisa y sale con 0 (la pila arranca igual, pero el dashboard de clientes queda vacío).
 Toda la pila arranca con valores de ejemplo.
 
 ### Carga histórica (CSV de junio → InfluxDB)
 
 El CSV `BDA/ImporCsvPandas/captaciones_junio_2026.csv` **no se versiona**:
-es un dato sintético y pesado. Genéralo antes de levantar la pila:
+es un dato sintético y pesado. `scripts/setup-env.sh` lo genera si no existe;
+para regenerarlo a mano:
 
 ```bash
 # 1) Genera el line protocol (500K registros; tarda un poco)
@@ -171,9 +177,9 @@ python generadores/line_protocol_a_csv.py \
   BDA/ImporCsvPandas/captaciones_junio_2026.csv
 ```
 
-El `.txt` intermedio está gitignorado y se puede borrar. El conversor marca
-como `fecha_incorrecta` las filas sin hora válida; el loader y el notebook las
-rechazan igual, así que el histórico cargado es el mismo.
+El `.txt` intermedio está gitignorado y `setup-env.sh` lo borra al terminar. El
+conversor marca como `fecha_incorrecta` las filas sin hora válida; el loader y el
+notebook las rechazan igual, así que el histórico cargado es el mismo.
 
 Una vez generado, el `loader` lo carga solo al levantar: es un servicio
 one-shot que lee el CSV (500K filas), lo limpia igual que el notebook del equipo
@@ -213,7 +219,7 @@ docker compose up -d nodered
 Para levantar solo InfluxDB (ya listo):
 
 ```bash
-./scripts/setup-env.sh                 # crea .env con todas las credenciales, si aún no existe
+./scripts/setup-env.sh                 # crea .env y el CSV histórico si aún no existen
 docker compose up -d influxdb influx-tokens-init
 docker compose logs -f influxdb
 ```
