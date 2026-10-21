@@ -285,7 +285,7 @@
             {
                 "name": "RAPIDAPI_KEY",
                 "value": "RAPIDAPI_KEY",
-                "type": "str"
+                "type": "env"
             }
         ]
     },
