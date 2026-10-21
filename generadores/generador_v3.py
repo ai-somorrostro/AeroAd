@@ -258,7 +258,7 @@ def os_por_fabricante(fabricante):
 
 IDIOMAS = {
     "Android": {
-        "the ones-ES": 25,
+        "es-ES": 25,
         "en-GB": 14,
         "en-US": 10,
         "fr-FR": 10,

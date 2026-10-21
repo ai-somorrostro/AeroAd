@@ -1,7 +1,7 @@
 {
   "title": "Monitorización en tiempo real",
   "uid": "monitorizacion-tiempo-real",
-  "description": "GENERADO desde BDA/Dashboards/MonitorizacionTiempoRealGrafana.json (formato API v2) - no editar a mano, se regenera.",
+  "description": "Dashboard de monitorización en tiempo real provisionado por Grafana; editar este JSON.",
   "tags": [],
   "timezone": "Europe/Madrid",
   "time": {
