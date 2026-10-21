@@ -14,12 +14,12 @@
 
 ## 3. Cliente de desarrollo (opencode)
 
-- [ ] 3.1 Configurar `opencode.json` (sección `mcp`) con una entrada por instancia/rol apuntando por HTTP a su puerto y su token de llamante, solo para desarrollo y pruebas; verificar que opencode lista la tool de consulta InfluxDB y excluye escritura y alertas
+- [x] 3.1 Configurar `opencode.json` (sección `mcp`) con una entrada por instancia/rol apuntando por HTTP a su puerto y su token de llamante, solo para desarrollo y pruebas; verificar que opencode lista la tool de consulta InfluxDB y excluye escritura y alertas
 
 ## 4. Documentación y verificación extremo a extremo
 
 - [x] 4.1 Añadir al `README.md` la sección de **conexión de un cliente MCP por rol** (URL, puerto y token de cada uno) y la de **limitaciones** (el agente puede equivocarse con las consultas Flux); actualizar el árbol/tabla de servicios; verificar el render de las secciones añadidas
-- [ ] 4.2 Levantar la pila (`up -d`), verificar `/healthz` en los tres puertos, ejecutar una consulta Flux por instancia e informar qué funciona y qué no; verificar que ningún token puede escribir y que un rol no accede a recursos fuera de su rol
+- [x] 4.2 Levantar la pila (`up -d`), verificar `/healthz` en los tres puertos, ejecutar una consulta Flux por instancia e informar qué funciona y qué no; verificar que ningún token puede escribir y que un rol no accede a recursos fuera de su rol
 
 ## Dependencias externas
 

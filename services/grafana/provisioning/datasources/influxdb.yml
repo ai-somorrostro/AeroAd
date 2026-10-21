@@ -1,6 +1,6 @@
 # Datasource de InfluxDB (Flux) aprovisionado para Grafana.
-# Usa el token de SOLO LECTURA generado por scripts/create-tokens.sh (GRAFANA_INFLUXDB_TOKEN),
-# nunca el token admin. Grafana expande las variables de entorno al arrancar.
+# Usa el token de SOLO LECTURA generado por influx-tokens-init (volumen mcp-secrets),
+# nunca el token admin. Grafana lo lee del fichero compartido al arrancar.
 apiVersion: 1
 
 datasources:
@@ -17,4 +17,4 @@ datasources:
       defaultBucket: ${INFLUXDB_INIT_BUCKET}
       tlsSkipVerify: true
     secureJsonData:
-      token: ${GRAFANA_INFLUXDB_TOKEN}
+      token: $__file{/shared/influx-grafana-token}

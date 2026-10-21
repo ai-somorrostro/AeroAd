@@ -8,5 +8,9 @@ RUN npm install --no-audit --no-fund --prefix /data --omit=dev \
 # El flow de prueba queda horneado en la imagen; un volumen con nombre nuevo
 # lo hereda al crearse. Para renovarlo: rebuild + recrear el volumen.
 COPY --chown=node-red:node-red flows.json /data/flows.json
+# Entry point propio: exporta el token de InfluxDB desde el volumen compartido
+# (influx-tokens-init) antes de arrancar, y delega en el entrypoint oficial.
+COPY --chmod=0755 aeroadd-entrypoint.sh /usr/src/node-red/aeroadd-entrypoint.sh
+ENTRYPOINT ["/usr/src/node-red/aeroadd-entrypoint.sh"]
 
 USER node-red

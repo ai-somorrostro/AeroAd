@@ -221,10 +221,23 @@ __marimo__/
 
 # AeroAdd
 .env
-data/*
-!data/.gitkeep
 influxdb-data/
 grafana-data/
 nodered-data/
 .opencode/
 *.log
+
+# Dependencias de Node
+node_modules/
+
+# Ficheros de Windows (Mark of the Web)
+*:Zone.Identifier
+
+# Datos pesados o generados: se regeneran con los notebooks/generadores
+BDA/ImporCsvPandas/*.csv
+generadores/*.txt
+generadores/*.csv
+synthetic_sales.csv
+
+# Secretos (gestión por .env / variables; jamás en el repo)
+ApikeyFlights.txt

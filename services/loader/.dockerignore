@@ -1,0 +1,6 @@
+# .dockerignore de services/loader — la imagen solo necesita requirements.txt y src/
+__pycache__/
+*.py[cod]
+*.log
+Dockerfile
+.dockerignore
