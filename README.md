@@ -18,7 +18,8 @@ AeroAdd/
 │   ├── influxdb/           # init: 01-create-buckets.sh (buckets de INFLUXDB_EXTRA_BUCKETS)
 │   ├── grafana/
 │   │   └── provisioning/
-│   │       └── datasources/influxdb.yml  # datasource InfluxDB (Flux) con token de lectura
+│   │       ├── datasources/influxdb.yml  # datasource InfluxDB (Flux); token de lectura del volumen mcp-secrets ($__file)
+│   │       └── dashboards/               # los 4 dashboards provisionados (JSON)
 │   ├── nodered/                      # imagen propia + flows productivos (5 pestañas)
 │   │   ├── Dockerfile                # base fijada + node-red-contrib-influxdb
 │   │   ├── package.json              # dependencia del contrib (versión fijada)
@@ -232,6 +233,7 @@ docker exec aeroadd-influxdb influx query --token "$INFLUXDB_ADMIN_TOKEN" --org 
 - **`401 Unauthorized` en Grafana o Node-RED**: no debería pasar salvo que borres el volumen `mcp-secrets` sin recrear los init. Los tokens se regeneran solos en el siguiente `docker compose up -d`; si el problema persiste, `docker compose down -v && docker compose up -d --build` (re-carga el histórico incluido).
 - **NoData con datos existentes**: casi siempre es el rango de tiempo del dashboard (ver tabla de arriba) o el filtro de variable (`tipo_tienda`).
 - **`type conflict: float != int` en un panel Flux**: algún campo entero se compara con un literal decimal (`== 1.0`) o se mezcla con floats en un `if/else`. Envolver el campo con `float(v: ...)` en la query del panel.
+- **`<script>.sh: Is a directory` al arrancar un init (exit 126), con el fichero de verdad en disco**: Docker instalado como **snap** en WSL/Ubuntu no ve los ficheros fuera de `$HOME` (p. ej. `/tmp` es privado del snap): al no poder leer el origen del bind-mount, Docker crea en su destino **un directorio**. Clonar/ejecutar la pila en `$HOME` o en `/mnt/c` y volver a levantar (`docker compose down -v && docker compose up -d --build`).
 
 ## MCP de Grafana (una instancia por rol)
 
