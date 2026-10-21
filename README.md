@@ -76,12 +76,15 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
 
 ### Clave de la API de vuelos (AeroDataBox / RapidAPI)
 
-El flow de llegadas a Barajas la lee de la **variable de entorno de la pestaña** en Node-RED, no solo del contenedor. Hay que ponerla en los dos sitios:
+El flow de llegadas a Barajas lee la clave de la **variable de entorno del contenedor**. Solo hay que ponerla en `.env`:
 
 1. En `.env`: `RAPIDAPI_KEY=<tu clave>` (sin comillas).
-2. En Node-RED (`http://localhost:1880`): doble clic en la pestaña `3 · API llegadas a Barajas (AeroDataBox)` → *Variables de entorno* → pon la clave en `RAPIDAPI_KEY` → *Deploy*. (Equivale a editar el campo `env` de esa pestaña en `flows.json`.)
+2. Reconstruir Node-RED para que el contenedor reciba la variable:
+   ```bash
+   docker compose up -d --build nodered
+   ```
 
-Sin clave válida ese pipeline no trae horarios; el resto de flows siguen funcionando. No subir claves reales al repositorio: van solo en `.env` (gitignorado) y en el volumen `nodered-data`, nunca en ficheros del repo.
+La pestaña `3 · API llegadas a Barajas (AeroDataBox)` ya tiene `RAPIDAPI_KEY` configurada como referencia de entorno (`type: env`), así que no hace falta escribir la clave en la interfaz. Sin clave válida ese pipeline no trae horarios; el resto de flows siguen funcionando. No subir claves reales al repositorio: van solo en `.env` (gitignorado), nunca en ficheros del repo.
 
 ### Tokens de InfluxDB (mínimo privilegio)
 
