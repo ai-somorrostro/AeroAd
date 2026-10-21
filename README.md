@@ -13,6 +13,7 @@ AeroAdd/
 ├── .env.example            # variables de ejemplo, SIN secretos reales
 ├── docker-compose.yml
 ├── AGENTS.md               # instrucciones para opencode
+├── opencode.json           # configuración de opencode para los MCP de Grafana
 ├── openspec/               # lo genera openspec
 ├── services/
 │   ├── influxdb/           # init: 01-create-buckets.sh (buckets de INFLUXDB_EXTRA_BUCKETS)
@@ -28,11 +29,15 @@ AeroAdd/
 │   │   ├── Dockerfile
 │   │   ├── requirements.txt
 │   │   └── src/main.py
-├── data/                   # datasets (gitignorados salvo .gitkeep)
-├── notebooks/              # parte SBD
-├── docs/                   # parte MIA, capturas, organigrama de buckets
-├── BDA/ImporCsvPandas/     # notebooks; los CSV se generan y no se versionan
-├── generadores/            # generador_v3.py (500K captaciones), line_protocol_a_csv.py y ventas
+├── BDA/
+│   ├── ImporCsvPandas/     # notebooks de carga e integración; los CSV se generan y no se versionan
+│   └── PDF + Organigrama/  # PDF del reto BDA y organigrama SVG
+├── MIA/                    # PDF del reto MIA
+├── SBD/                    # PDF y notebook de análisis de SBD
+├── data/                   # datos locales (solo .gitkeep; el contenido pesado no se versiona)
+├── docs/                   # documentación local (solo .gitkeep)
+├── notebooks/              # notebooks locales (solo .gitkeep)
+├── generadores/            # generador_v3.py (500K captaciones) y line_protocol_a_csv.py
 └── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service accounts del MCP)
 ```
 
@@ -58,8 +63,10 @@ el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0
 - Docker
 - Docker Compose (v2, plugin `docker compose`)
 - Git
+- Python 3 (opcional; solo para regenerar el CSV histórico con `generadores/`)
 
-(La imagen del loader ya lleva `pandas` e `influxdb-client`, no hace falta instalar nada más en el equipo.)
+(La imagen del loader ya lleva `pandas` e `influxdb-client`, así que para arrancar la
+pila no hace falta instalar Python ni dependencias en el equipo.)
 
 ## Configuración
 
