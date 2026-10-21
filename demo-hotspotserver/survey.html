@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Survey - Free WiFi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="lang-switcher">
+        <button class="lang-toggle" aria-label="Change language">
+            <span class="lang-current-label">English</span>
+            <span class="lang-arrow">&#9662;</span>
+        </button>
+        <div class="lang-dropdown">
+            <a href="#" class="lang-dropdown-item" data-lang="en"><span class="lang-option-label">English</span></a>
+            <a href="#" class="lang-dropdown-item" data-lang="fr"><span class="lang-option-label">Français</span></a>
+            <a href="#" class="lang-dropdown-item" data-lang="es"><span class="lang-option-label">Español</span></a>
+            <a href="#" class="lang-dropdown-item" data-lang="ru"><span class="lang-option-label">Русский</span></a>
+        </div>
+    </div>
+
+    <div class="survey-container">
+        <div class="survey-header">
+            <div class="logo small">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                </svg>
+            </div>
+            <h2 data-i18n="surveyTitle">You're Connected!</h2>
+            <p class="survey-intro" data-i18n="surveyIntro">Could you take this 5-minute survey? It helps us improve your experience.</p>
+        </div>
+
+        <form id="surveyForm" class="survey-form">
+            <div class="form-group">
+                <label for="age" data-i18n="ageLabel">How old are you?</label>
+                <input type="number" id="age" name="age" min="18" max="99" data-i18n-placeholder="agePlaceholder" placeholder="Enter your age" required>
+            </div>
+
+            <div class="form-group">
+                <label for="name" data-i18n="nameLabel">Name &amp; Surname</label>
+                <input type="text" id="name" name="name" data-i18n-placeholder="namePlaceholder" placeholder="Enter your name and surname" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email" data-i18n="emailLabel">Email Address</label>
+                <input type="email" id="email" name="email" data-i18n-placeholder="emailPlaceholder" placeholder="Enter your email address" required>
+            </div>
+
+            <div class="form-group">
+                <label for="country" data-i18n="countryLabel">Country of Origin</label>
+                <select id="country" name="country" required>
+                    <option value="" disabled selected data-i18n="selectPlaceholder">Select your country</option>
+                    <option value="en-GB" data-i18n-option="cEnGB">United Kingdom (en-GB)</option>
+                    <option value="en-US" data-i18n-option="cEnUS">United States (en-US)</option>
+                    <option value="fr-FR" data-i18n-option="cFrFR">France (fr-FR)</option>
+                    <option value="de-DE" data-i18n-option="cDeDE">Germany (de-DE)</option>
+                    <option value="it-IT" data-i18n-option="cItIT">Italy (it-IT)</option>
+                    <option value="pt-PT" data-i18n-option="cPtPT">Portugal (pt-PT)</option>
+                    <option value="nl-NL" data-i18n-option="cNlNL">Netherlands (nl-NL)</option>
+                    <option value="pl-PL" data-i18n-option="cPlPL">Poland (pl-PL)</option>
+                    <option value="ca-ES" data-i18n-option="cCaES">Catalonia (ca-ES)</option>
+                    <option value="sv-SE" data-i18n-option="cSvSE">Sweden (sv-SE)</option>
+                    <option value="es-MX" data-i18n-option="cEsMX">Mexico (es-MX)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit" data-i18n="submitBtn">Submit Survey</button>
+        </form>
+
+        <p class="terms survey-terms">
+            <span data-i18n="surveyTermsText">By submitting, you agree to our </span><a href="terms.html" class="terms-link" data-i18n="termsLink">Terms &amp; Conditions</a>.
+        </p>
+
+        <div id="surveyComplete" class="survey-complete hidden">
+            <div class="checkmark">&#10003;</div>
+            <h3 data-i18n="thankYou">Thank You!</h3>
+            <p data-i18n="thankYouMsg">Your survey has been submitted. Enjoy your free WiFi!</p>
+            <button class="btn-back" onclick="window.location.href='index.html'" data-i18n="backToLogin">Back to Login</button>
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
+    <script src="collect.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
