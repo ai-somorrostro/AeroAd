@@ -1,7 +1,8 @@
 #!/bin/sh
-# setup-env.sh — genera el .env local con credenciales aleatorias, sin rellenar nada a mano.
+# setup-env.sh — genera el .env local con credenciales aleatorias y el CSV
+# histórico si falta, sin rellenar nada a mano.
 #
-#   Uso:  ./scripts/setup-env.sh
+#   Uso:  ./scripts/setup-env.sh [--sin-historico]
 #
 # Qué hace:
 #   - Si no existe .env, lo crea a partir de .env.example.
@@ -12,6 +13,9 @@
 #     nunca pisa valores que ya hayas puesto tú.
 #   - Pide la RAPIDAPI_KEY una sola vez (Enter para dejarla vacía; el
 #     pipeline de llegadas queda inactivo sin ella, el resto funciona).
+#   - Genera el CSV histórico de junio si no existe (requiere Python 3) para
+#     que el loader y el dashboard de clientes tengan datos desde el primer
+#     arranque. Con --sin-historico se omite este paso.
 #   - Nunca imprime el valor de las credenciales.
 #   - Deja el .env con permisos 600 y escribe el fichero solo localmente
 #     (.env está en .gitignore, jamás se sube al repositorio).
@@ -23,6 +27,25 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_FILE="$ROOT/.env"
 TPL="$ROOT/.env.example"
+
+GENERAR_HISTORICO=1
+for arg in "$@"; do
+  case "$arg" in
+    --sin-historico|--skip-historico)
+      GENERAR_HISTORICO=0
+      ;;
+    -h|--help)
+      echo "Uso: $0 [--sin-historico]"
+      echo "  --sin-historico  no genera el CSV histórico aunque falte"
+      exit 0
+      ;;
+    *)
+      echo "Opción desconocida: $arg" >&2
+      echo "Uso: $0 [--sin-historico]" >&2
+      exit 2
+      ;;
+  esac
+done
 
 # ---- aleatoriedad ----
 rand() { # valor hex aleatorio (48 caracteres)
@@ -76,6 +99,46 @@ ensure_secret() { # $1: nombre — genera si vacío o placeholder
   esac
 }
 
+generar_historico() {
+  csv="$ROOT/BDA/ImporCsvPandas/captaciones_junio_2026.csv"
+  txt="$ROOT/generadores/captaciones_junio_2026_v3.txt"
+  tmp_csv="${csv}.tmp.$$"
+
+  if [ -s "$csv" ]; then
+    echo "[setup-env] Histórico ya presente (${csv#"$ROOT"/}), no se regenera."
+    return 0
+  fi
+
+  python_bin=""
+  for candidato in python3 python; do
+    if command -v "$candidato" >/dev/null 2>&1 \
+        && "$candidato" -c 'import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)' >/dev/null 2>&1; then
+      python_bin="$candidato"
+      break
+    fi
+  done
+  if [ -z "$python_bin" ]; then
+    echo "[setup-env] ERROR: se necesita Python 3 para generar el CSV histórico." >&2
+    echo "  Instálalo o usa '$0 --sin-historico' y genera el CSV a mano (ver README)." >&2
+    return 1
+  fi
+
+  zona="$(current_value LOADER_TZ)"
+  [ -n "$zona" ] || zona="Europe/Madrid"
+
+  echo "[setup-env] CSV histórico no encontrado; generando 500K registros (tarda unos minutos)..."
+  limpiar_historico() { rm -f "$txt" "$tmp_csv"; }
+  trap limpiar_historico 0 1 2 15
+
+  ( cd "$ROOT" && TZ="$zona" "$python_bin" generadores/generador_v3.py )
+  "$python_bin" "$ROOT/generadores/line_protocol_a_csv.py" "$txt" "$tmp_csv"
+  mv "$tmp_csv" "$csv"
+
+  limpiar_historico
+  trap - 0 1 2 15
+  echo "[setup-env] Histórico generado en ${csv#"$ROOT"/}."
+}
+
 # ---- secretos automáticos ----
 ensure_secret INFLUXDB_INIT_PASSWORD
 ensure_secret INFLUXDB_ADMIN_TOKEN
@@ -108,5 +171,12 @@ fi
 
 chmod 600 "$ENV_FILE"
 
-echo "[setup-env] Listo. Siguiente paso (no hay ninguno más):"
+# ---- histórico (CSV que consume el loader) ----
+if [ "$GENERAR_HISTORICO" -eq 1 ]; then
+  generar_historico
+else
+  echo "[setup-env] Generación del histórico omitida (--sin-historico)."
+fi
+
+echo "[setup-env] Listo. Siguiente paso:"
 echo "  docker compose up -d --build"
