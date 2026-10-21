@@ -31,8 +31,8 @@ AeroAdd/
 ├── data/                   # datasets (gitignorados salvo .gitkeep)
 ├── notebooks/              # parte SBD
 ├── docs/                   # parte MIA, capturas, organigrama de buckets
-├── BDA/ImporCsvPandas/     # CSV históricos (captaciones junio, rechazadas, dataset integrado)
-├── generadores/            # generadores sintéticos (500K captaciones, ventas)
+├── BDA/ImporCsvPandas/     # notebooks; los CSV se generan y no se versionan
+├── generadores/            # generador_v3.py (500K captaciones), line_protocol_a_csv.py y ventas
 └── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service accounts del MCP)
 ```
 
@@ -145,20 +145,44 @@ docker compose down     # detiene la pila
 
 Nota: el `loader` carga el histórico de captaciones (CSV de `BDA/ImporCsvPandas`,
 montado en `/data`) en el bucket `captaciones_julio` y escribe un heartbeat.
+Ese CSV **no está versionado**: genéralo antes con los pasos de la sección
+siguiente. Si no existe, el loader avisa y sale con 0 (la pila arranca igual).
 Toda la pila arranca con valores de ejemplo.
 
 ### Carga histórica (CSV de junio → InfluxDB)
 
-Se hace sola al levantar: el `loader` es un servicio one-shot que lee
-`BDA/ImporCsvPandas/captaciones_junio_2026.csv` (~461K filas), lo limpia igual que el
-notebook del equipo y lo sube al bucket `captaciones_julio` en lotes. Tarda unos
-minutos; al terminar sale del contenedor con código 0.
+El CSV `BDA/ImporCsvPandas/captaciones_junio_2026.csv` **no se versiona**:
+es un dato sintético y pesado. Genéralo antes de levantar la pila:
+
+```bash
+# 1) Genera el line protocol (500K registros; tarda un poco)
+TZ=Europe/Madrid python generadores/generador_v3.py
+
+# 2) Convierte a CSV con las 9 columnas que esperan el loader y el notebook
+python generadores/line_protocol_a_csv.py \
+  generadores/captaciones_junio_2026_v3.txt \
+  BDA/ImporCsvPandas/captaciones_junio_2026.csv
+```
+
+El `.txt` intermedio está gitignorado y se puede borrar. El conversor marca
+como `fecha_incorrecta` las filas sin hora válida; el loader y el notebook las
+rechazan igual, así que el histórico cargado es el mismo.
+
+Una vez generado, el `loader` lo carga solo al levantar: es un servicio
+one-shot que lee el CSV (500K filas), lo limpia igual que el notebook del equipo
+(~461K filas válidas) y lo sube al bucket `captaciones_julio` en lotes. Tarda
+unos minutos; al terminar sale del contenedor con código 0. Si el CSV no existe,
+avisa y sale con 0 sin cargar nada.
 
 Para repetirla sin re-crear la pila:
 
 ```bash
 docker compose run --rm loader   # re-escribe los mismos puntos (idempotente)
 ```
+
+`captaciones_rechazadas.csv` y `dataset_integrado.csv` son salidas de los
+notebooks de `BDA/ImporCsvPandas/`; tampoco se versionan. Ejecuta los notebooks
+si los necesitas.
 
 ### Verificar que todo responde
 

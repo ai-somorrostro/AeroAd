@@ -235,6 +235,9 @@ node_modules/
 
 # Datos pesados o generados: se regeneran con los notebooks/generadores
 BDA/ImporCsvPandas/*.csv
+generadores/*.txt
+generadores/*.csv
+synthetic_sales.csv
 
 # Secretos (gestión por .env / variables; jamás en el repo)
 ApikeyFlights.txt
