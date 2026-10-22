@@ -47,7 +47,7 @@ AeroAdd/
 |-----------|------------------------|------------------------------|--------|
 | influxdb  | `influxdb:2.7`         | `8086`                       | Se inicializa solo en el arranque (usuario, contraseña, org, bucket y tokens via `docker compose up -d --build`); credenciales en `.env` (las genera `scripts/setup-env.sh`) |
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
-| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | 5 flows: simulador WiFi → `captaciones_tiemporeal`, Open-Meteo → `contexto_madrid`, llegadas Barajas (AeroDataBox/RapidAPI) → `contexto_madrid`, simulador ventas → `captaciones_tiemporeal`, smoke test. El token de escritura lo exporta el entrypoint leyendo el volumen `mcp-secrets`; la API de vuelos necesita además `RAPIDAPI_KEY` (ver Configuración) |
+| nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | 5 flows: simulador WiFi → `captaciones_tiemporeal`, Open-Meteo → `contexto_madrid`, llegadas Barajas (AeroDataBox/RapidAPI) → `contexto_madrid`, simulador ventas → `captaciones_tiemporeal`, smoke test → `captaciones_tiemporeal`. El token de escritura lo exporta el entrypoint leyendo el volumen `mcp-secrets`; la API de vuelos necesita además `RAPIDAPI_KEY` (ver Configuración) |
 | loader    | `build: ./services/loader` | — (sin puerto)             | One-shot: carga el histórico del CSV de junio (~461K filas) en `captaciones_julio` y escribe un heartbeat; su token de escritura lo lee del volumen `mcp-secrets` |
 | mcp-grafana | `grafana/mcp-grafana:2.0.2` | `8000` | MCP oficial; una única instancia para todos los clientes, con service account **Viewer** compartida |
 
@@ -125,6 +125,8 @@ el token admin de `.env` (`INFLUXDB_ADMIN_TOKEN`). Es idempotente y:
   `mcp-secrets`: uno con **solo lectura** de los buckets de los dashboards
   (`GRAFANA_READ_BUCKETS`), y otros de **solo escritura** para Node-RED
   (`NODERED_WRITE_BUCKETS`) y el loader (`LOADER_WRITE_BUCKETS`).
+- El smoke test de Node-RED escribe en `NODERED_SMOKE_BUCKET` (por defecto
+  `captaciones_tiemporeal`), que debe estar incluido en `NODERED_WRITE_BUCKETS`.
 - Si cambia la lista de buckets, regenera los tokens con los permisos actualizados
   y borra los obsoletos.
 

@@ -92,7 +92,8 @@ services:
       - FLOWS=flows.json
       - INFLUXDB_URL=${INFLUXDB_URL:-http://influxdb:8086} # TODO: rellenar a mano
       - INFLUXDB_ORG=${INFLUXDB_INIT_ORG:-CAMBIAME-org}
-      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET:-CAMBIAME-bucket}
+      # Bucket del smoke test; debe estar en NODERED_WRITE_BUCKETS.
+      - INFLUXDB_BUCKET=${NODERED_SMOKE_BUCKET:-captaciones_tiemporeal}
       # Token de escritura: lo exporta el entrypoint propio de la imagen desde
       # /shared/influx-nodered-token (lo genera influx-tokens-init). Si no existe
       # el fichero, el contenedor arranca y el pipeline de InfluxDB fallará a la
@@ -204,7 +205,9 @@ services:
     user: "0:0" # el volumen mcp-secrets nace como root; el MCP (uid 1000) solo lee vía chmod 444
     volumes:
       - mcp-secrets:/shared
-      - ./scripts/create-grafana-sa.sh:/scripts/create-grafana-sa.sh:ro
+      # Directorio completo (ro) en vez de un solo fichero: más robusto en
+      # Docker Desktop/WSL, donde el bind mount de un fichero puede fallar.
+      - ./scripts:/scripts:ro
     env_file:
       - path: .env
         required: false
@@ -234,7 +237,8 @@ services:
     entrypoint: ["bash", "/scripts/create-influx-tokens.sh"]
     volumes:
       - mcp-secrets:/shared
-      - ./scripts/create-influx-tokens.sh:/scripts/create-influx-tokens.sh:ro
+      # Directorio completo (ro) para evitar bind mounts de un solo fichero.
+      - ./scripts:/scripts:ro
     env_file:
       - path: .env
         required: false
