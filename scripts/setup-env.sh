@@ -7,7 +7,7 @@
 #   - Si no existe .env, lo crea a partir de .env.example.
 #   - Genera con aleatoriedad criptográfica (openssl o /dev/urandom):
 #       INFLUXDB_INIT_PASSWORD, INFLUXDB_ADMIN_TOKEN, GRAFANA_ADMIN_PASSWORD
-#       y los tokens de llamante del MCP (MCP_GRAFANA_SERVER_TOKEN_*).
+#       y el token de llamante del MCP (MCP_GRAFANA_SERVER_TOKEN).
 #   - Solo rellena variables vacías o placeholder (CAMBIAME/CHANGEME):
 #     nunca pisa valores que ya hayas puesto tú.
 #   - Pide la RAPIDAPI_KEY una sola vez (Enter para dejarla vacía; el
@@ -80,9 +80,7 @@ ensure_secret() { # $1: nombre — genera si vacío o placeholder
 ensure_secret INFLUXDB_INIT_PASSWORD
 ensure_secret INFLUXDB_ADMIN_TOKEN
 ensure_secret GRAFANA_ADMIN_PASSWORD
-ensure_secret MCP_GRAFANA_SERVER_TOKEN_DIRECCION
-ensure_secret MCP_GRAFANA_SERVER_TOKEN_ANALISIS
-ensure_secret MCP_GRAFANA_SERVER_TOKEN_IT
+ensure_secret MCP_GRAFANA_SERVER_TOKEN
 
 # ---- RAPIDAPI_KEY (una vez, por teclado; opcional) ----
 if [ "$(current_value RAPIDAPI_KEY)" = "" ]; then

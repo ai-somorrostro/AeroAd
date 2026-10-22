@@ -148,16 +148,15 @@ services:
     networks:
       - aeroadd
 
-  # Servidores MCP oficiales de Grafana (streamable-http), uno por rol.
-  # Sin build propio. El entrypoint de la imagen arranca en SSE: se sobreescribe.
-  # Cada instancia se autentica con la service account de SU rol (fichero de token
-  # propio) y exige su propio token de llamante; así el agente hereda los permisos
-  # del rol y no puede suplantar a otro.
-  mcp-direccion:
+  # Servidor MCP oficial de Grafana (streamable-http), una sola instancia para
+  # todos los clientes. Sin build propio. El entrypoint de la imagen arranca en
+  # SSE: se sobreescribe. Se autentica con una única service account Viewer y
+  # exige un token de llamante compartido; todos los clientes ven lo mismo.
+  mcp-grafana:
     image: grafana/mcp-grafana:2.0.2
-    container_name: ${MCP_DIRECCION_CONTAINER_NAME:-aeroadd-mcp-direccion}
+    container_name: ${MCP_GRAFANA_CONTAINER_NAME:-aeroadd-mcp-grafana}
     entrypoint: ["/app/mcp-grafana"]
-    command: &mcp-command
+    command:
       - -t
       - streamable-http
       - --address
@@ -167,12 +166,11 @@ services:
       - --disable-write
       - --enable-query
       - --disable-alerting
-      # Sin esto, el servidor rechaza con 403 todo Host que no sea el puerto
-      # interno (8000): cada instancia se expone en un puerto host distinto.
+      # El servidor valida el header Host; solo se publica el puerto 8000.
       - --allowed-hosts
-      - ${MCP_ALLOWED_HOSTS:-localhost:8000,localhost:8001,localhost:8002,127.0.0.1:8000,127.0.0.1:8001,127.0.0.1:8002,[::1]:8000,[::1]:8001,[::1]:8002}
+      - ${MCP_ALLOWED_HOSTS:-localhost:8000,127.0.0.1:8000,[::1]:8000}
     ports:
-      - "${MCP_DIRECCION_PORT:-8000}:8000"
+      - "${MCP_GRAFANA_PORT:-8000}:8000"
     volumes:
       - mcp-secrets:/shared:ro
     env_file:
@@ -180,15 +178,15 @@ services:
         required: false
     environment:
       - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
-      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_DIRECCION_TOKEN_FILE:-/shared/sa-direccion-token}
-      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN_DIRECCION:-CAMBIAME} # token de llamante, rellenar a mano
-    depends_on: &mcp-depends
+      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_TOKEN_FILE:-/shared/sa-mcp-token}
+      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN:-CAMBIAME} # token de llamante compartido
+    depends_on:
       grafana:
         condition: service_healthy
       grafana-sa-init:
         condition: service_completed_successfully
     restart: unless-stopped
-    healthcheck: &mcp-healthcheck
+    healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8000 && printf 'GET /healthz HTTP/1.1\r\nHost: localhost:8000\r\nConnection: close\r\n\r\n' >&3 && head -c 12 <&3 | grep -q 200"]
       interval: 15s
       timeout: 5s
@@ -197,52 +195,8 @@ services:
     networks:
       - aeroadd
 
-  mcp-analisis:
-    image: grafana/mcp-grafana:2.0.2
-    container_name: ${MCP_ANALISIS_CONTAINER_NAME:-aeroadd-mcp-analisis}
-    entrypoint: ["/app/mcp-grafana"]
-    command: *mcp-command
-    ports:
-      - "${MCP_ANALISIS_PORT:-8001}:8000"
-    volumes:
-      - mcp-secrets:/shared:ro
-    env_file:
-      - path: .env
-        required: false
-    environment:
-      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
-      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_ANALISIS_TOKEN_FILE:-/shared/sa-analisis-token}
-      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN_ANALISIS:-CAMBIAME} # token de llamante, rellenar a mano
-    depends_on: *mcp-depends
-    restart: unless-stopped
-    healthcheck: *mcp-healthcheck
-    networks:
-      - aeroadd
-
-  mcp-it:
-    image: grafana/mcp-grafana:2.0.2
-    container_name: ${MCP_IT_CONTAINER_NAME:-aeroadd-mcp-it}
-    entrypoint: ["/app/mcp-grafana"]
-    command: *mcp-command
-    ports:
-      - "${MCP_IT_PORT:-8002}:8000"
-    volumes:
-      - mcp-secrets:/shared:ro
-    env_file:
-      - path: .env
-        required: false
-    environment:
-      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
-      - GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE=${GRAFANA_SA_IT_TOKEN_FILE:-/shared/sa-it-token}
-      - MCP_GRAFANA_SERVER_TOKEN=${MCP_GRAFANA_SERVER_TOKEN_IT:-CAMBIAME} # token de llamante, rellenar a mano
-    depends_on: *mcp-depends
-    restart: unless-stopped
-    healthcheck: *mcp-healthcheck
-    networks:
-      - aeroadd
-
-  # Init efímero: crea las service accounts Viewer de Grafana (una por rol) y sus
-  # tokens (scripts/create-grafana-sa.sh) en el volumen compartido mcp-secrets,
+  # Init efímero: crea la service account Viewer del MCP y su token
+  # (scripts/create-grafana-sa.sh) en el volumen compartido mcp-secrets,
   # donde también dejan los suyos influx-tokens-init y el propio provisioning.
   grafana-sa-init:
     image: curlimages/curl:8.12.1
@@ -258,13 +212,9 @@ services:
       - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
       - GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER:-ejemplo-usuario}
       - GRAFANA_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-CHANGEME}
+      - GRAFANA_SA_NAME=${GRAFANA_SA_NAME:-sa-mcp}
       - GRAFANA_SA_ROLE=${GRAFANA_SA_ROLE:-Viewer}
-      - GRAFANA_SA_DIRECCION_NAME=${GRAFANA_SA_DIRECCION_NAME:-sa-direccion}
-      - GRAFANA_SA_ANALISIS_NAME=${GRAFANA_SA_ANALISIS_NAME:-sa-analisis}
-      - GRAFANA_SA_IT_NAME=${GRAFANA_SA_IT_NAME:-sa-it}
-      - GRAFANA_SA_DIRECCION_TOKEN_FILE=${GRAFANA_SA_DIRECCION_TOKEN_FILE:-/shared/sa-direccion-token}
-      - GRAFANA_SA_ANALISIS_TOKEN_FILE=${GRAFANA_SA_ANALISIS_TOKEN_FILE:-/shared/sa-analisis-token}
-      - GRAFANA_SA_IT_TOKEN_FILE=${GRAFANA_SA_IT_TOKEN_FILE:-/shared/sa-it-token}
+      - GRAFANA_SA_TOKEN_FILE=${GRAFANA_SA_TOKEN_FILE:-/shared/sa-mcp-token}
     entrypoint: ["sh", "/scripts/create-grafana-sa.sh"]
     depends_on:
       grafana:

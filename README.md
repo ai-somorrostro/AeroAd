@@ -38,7 +38,7 @@ AeroAdd/
 ├── docs/                   # documentación local (solo .gitkeep)
 ├── notebooks/              # notebooks locales (solo .gitkeep)
 ├── generadores/            # generador_v3.py (500K captaciones) y line_protocol_a_csv.py
-└── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service accounts del MCP)
+└── scripts/                          # setup-env.sh (genera .env con credenciales aleatorias); create-influx-tokens.sh (tokens InfluxDB, se ejecuta dentro del contenedor influx-tokens-init); create-grafana-sa.sh (service account del MCP)
 ```
 
 ## Servicios
@@ -49,11 +49,9 @@ AeroAdd/
 | grafana   | `grafana/grafana:11.2.0` | `3000`                     | Datasource InfluxDB (Flux) provisionado con token de lectura; admin y puerto por `.env` |
 | nodered   | build `./services/nodered` (`node-red:4.0.2` + contrib InfluxDB) | `1880` | 5 flows: simulador WiFi → `captaciones_tiemporeal`, Open-Meteo → `contexto_madrid`, llegadas Barajas (AeroDataBox/RapidAPI) → `contexto_madrid`, simulador ventas → `captaciones_tiemporeal`, smoke test. El token de escritura lo exporta el entrypoint leyendo el volumen `mcp-secrets`; la API de vuelos necesita además `RAPIDAPI_KEY` (ver Configuración) |
 | loader    | `build: ./services/loader` | — (sin puerto)             | One-shot: carga el histórico del CSV de junio (~461K filas) en `captaciones_julio` y escribe un heartbeat; su token de escritura lo lee del volumen `mcp-secrets` |
-| mcp-direccion | `grafana/mcp-grafana:2.0.2` | `8000` | MCP oficial; rol **cúpula directiva** (Viewer), service account propia |
-| mcp-analisis  | `grafana/mcp-grafana:2.0.2` | `8001` | MCP oficial; rol **análisis** (Viewer), service account propia |
-| mcp-it        | `grafana/mcp-grafana:2.0.2` | `8002` | MCP oficial; rol **IT** (Viewer por ahora), service account propia |
+| mcp-grafana | `grafana/mcp-grafana:2.0.2` | `8000` | MCP oficial; una única instancia para todos los clientes, con service account **Viewer** compartida |
 
-Red propia `aeroadd` y volúmenes `influxdb-data`, `grafana-data`, `nodered-data`, `mcp-secrets` (tokens de las service accounts).
+Red propia `aeroadd` y volúmenes `influxdb-data`, `grafana-data`, `nodered-data`, `mcp-secrets` (token de la service account del MCP y tokens de InfluxDB).
 
 Nota: la imagen MCP se fija como `grafana/mcp-grafana:2.0.2` (sin `v`). En Docker Hub
 el tag no lleva prefijo, aunque la release/tag de git correspondiente sí (`v2.0.2`).
@@ -79,8 +77,8 @@ pila no hace falta instalar Python ni dependencias en el equipo.)
 - Si no existe `.env`, lo crea desde `.env.example`; si ya existe, **solo rellena
   las variables vacías o con placeholder** (`CAMBIAME`/`CHANGEME`), nunca pisa tus valores.
 - Genera aleatorios para: `INFLUXDB_INIT_PASSWORD`, `INFLUXDB_ADMIN_TOKEN`,
-  `GRAFANA_ADMIN_PASSWORD` y los tokens de llamante del MCP
-  (`MCP_GRAFANA_SERVER_TOKEN_*`).
+  `GRAFANA_ADMIN_PASSWORD` y el token de llamante del MCP
+  (`MCP_GRAFANA_SERVER_TOKEN`).
 - Pide la `RAPIDAPI_KEY` una sola vez por teclado (o Enter para dejarla vacía:
   el pipeline de llegadas queda inactivo, el resto de la pila funciona).
 - No imprime ninguna credencial por pantalla; el fichero queda local
@@ -143,12 +141,15 @@ manual: si rellenas el fallback `LOADER_INFLUXDB_TOKEN` a mano, bórralo tras un
 ## Cómo lanzarlo
 
 ```bash
-docker compose config   # valida el compose (funciona con y sin .env, usa valores de ejemplo por defecto)
+docker compose config --quiet   # valida sin imprimir variables de .env
 docker compose up -d --build
 docker compose ps
 docker compose logs -f
 docker compose down     # detiene la pila
 ```
+
+No ejecutes `docker compose config` sin `--quiet`: resuelve `env_file` y puede volcar
+las credenciales de `.env` en la terminal.
 
 Nota: el `loader` carga el histórico de captaciones (CSV de `BDA/ImporCsvPandas`,
 montado en `/data`) en el bucket `captaciones_julio` y escribe un heartbeat.
@@ -195,9 +196,7 @@ si los necesitas.
 
 ```bash
 curl http://localhost:3000/api/health                          # Grafana
-curl http://localhost:8000/healthz                             # MCP dirección
-curl http://localhost:8001/healthz                             # MCP análisis
-curl http://localhost:8002/healthz                             # MCP IT
+curl http://localhost:8000/healthz                             # MCP Grafana
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:1880/ # Node-RED
 docker compose logs loader --tail 5                             # heartbeat a InfluxDB
 ```
@@ -261,52 +260,75 @@ docker exec aeroadd-influxdb influx query --token "$INFLUXDB_ADMIN_TOKEN" --org 
 ## Resolución de problemas
 
 - **InfluxDB en bucle `unhealthy` (`failed to exec ... 01-create-buckets.sh: No such file or directory`)**: el script tiene finales CRLF; el kernel del contenedor no encuentra el intérprete `/bin/bash\r`. Pasar a LF (`sed -i 's/\r$//'`) y levantar de cero: `docker compose down -v && docker compose up -d`.
-- **`401 Unauthorized` en Grafana o Node-RED**: no debería pasar salvo que borres el volumen `mcp-secrets` sin recrear los init. Los tokens se regeneran solos en el siguiente `docker compose up -d`; si el problema persiste, `docker compose down -v && docker compose up -d --build` (re-carga el histórico incluido).
+- **`401 Unauthorized` en Grafana, Node-RED o MCP**: no debería pasar salvo que borres el volumen `mcp-secrets` sin recrear los init. Los tokens de Grafana/InfluxDB se regeneran solos en el siguiente `docker compose up -d`; si el problema persiste, `docker compose down -v && docker compose up -d --build` (re-carga el histórico incluido). En el MCP, el token de llamante no vive en `mcp-secrets`: sale de `MCP_GRAFANA_SERVER_TOKEN` en `.env`; expórtalo antes de abrir el cliente.
 - **NoData con datos existentes**: casi siempre es el rango de tiempo del dashboard (ver tabla de arriba) o el filtro de variable (`tipo_tienda`).
 - **`type conflict: float != int` en un panel Flux**: algún campo entero se compara con un literal decimal (`== 1.0`) o se mezcla con floats en un `if/else`. Envolver el campo con `float(v: ...)` en la query del panel.
 - **`<script>.sh: Is a directory` al arrancar un init (exit 126), con el fichero de verdad en disco**: Docker instalado como **snap** en WSL/Ubuntu no ve los ficheros fuera de `$HOME` (p. ej. `/tmp` es privado del snap): al no poder leer el origen del bind-mount, Docker crea en su destino **un directorio**. Clonar/ejecutar la pila en `$HOME` o en `/mnt/c` y volver a levantar (`docker compose down -v && docker compose up -d --build`).
 
-## MCP de Grafana (una instancia por rol)
+## MCP de Grafana (una sola instancia)
 
-El MCP oficial `grafana/mcp-grafana` se levanta en **tres instancias**, una por rol.
-Cada una se autentica con su propia **service account** de Grafana, de modo que el
-agente hereda los permisos de ese rol y no puede suplantar a otro.
+El MCP oficial `grafana/mcp-grafana` se levanta en **una única instancia** para todos
+los clientes. Se autentica con una **service account Viewer** de Grafana y exige un
+**token de llamante compartido**; todos los clientes que tengan ese token ven los
+mismos dashboards y datos. Es el modo adecuado mientras los tres perfiles sean de
+solo lectura.
 
-Las service accounts y sus tokens se crean solas al levantar la pila: el servicio
+La service account y su token se crean solos al levantar la pila: el servicio
 efímero `grafana-sa-init` ejecuta `scripts/create-grafana-sa.sh` (idempotente) y deja
-un fichero de token por rol en el volumen `mcp-secrets`. En `.env` solo hay que
-poner el usuario/contraseña admin de Grafana y los **tokens de llamante** por rol
-(no se generan solos: son la credencial con la que el cliente habla con cada MCP;
-`scripts/setup-env.sh` los genera automáticamente si están vacíos o como
-`CHANGEME`).
+el fichero `/shared/sa-mcp-token` en el volumen `mcp-secrets`. En `.env` solo hay que
+poner el usuario/contraseña admin de Grafana y el **token de llamante**
+(`MCP_GRAFANA_SERVER_TOKEN`; `scripts/setup-env.sh` lo genera automáticamente si está
+vacío o como `CHANGEME`).
 
 ### Conectar un cliente MCP
 
-| Rol | URL MCP | Puerto | Token de llamante (`.env`) |
-|-----|---------|--------|----------------------------|
-| Cúpula directiva | `http://localhost:8000/mcp` | 8000 | `MCP_GRAFANA_SERVER_TOKEN_DIRECCION` |
-| Análisis | `http://localhost:8001/mcp` | 8001 | `MCP_GRAFANA_SERVER_TOKEN_ANALISIS` |
-| IT | `http://localhost:8002/mcp` | 8002 | `MCP_GRAFANA_SERVER_TOKEN_IT` |
+| Servicio | URL MCP | Puerto | Token de llamante (`.env`) |
+|----------|---------|--------|----------------------------|
+| Grafana (todos) | `http://localhost:8000/mcp` | 8000 | `MCP_GRAFANA_SERVER_TOKEN` |
 
-El cliente debe enviar `Authorization: Bearer <token de su rol>`. Los puertos son
-configurables con `MCP_DIRECCION_PORT`, `MCP_ANALISIS_PORT` y `MCP_IT_PORT`.
+El cliente debe enviar `Authorization: Bearer <token>`. El puerto se configura con
+`MCP_GRAFANA_PORT`.
 
-`opencode.json` ya trae una entrada por rol (`grafana-direccion`, `grafana-analisis`,
-`grafana-it`) para **desarrollo y pruebas**; no es el consumidor final. Los tokens
-de llamante se leen de las variables de entorno de opencode.
+`opencode.json` ya trae la entrada `grafana` para **desarrollo y pruebas**; no es el
+consumidor final. El token se lee de la variable de entorno de opencode, así que
+expórtalo desde `.env` antes de abrir opencode:
+
+```bash
+set -a
+. ./.env
+set +a
+opencode
+```
 
 Las herramientas habilitadas son solo las de consulta: InfluxDB (Flux), datasources y
 dashboards en **lectura**; escrituras, alertas y consultas de panel están
 deshabilitadas.
+
+### Migración desde las tres instancias
+
+Si vienes de la versión con `mcp-direccion`, `mcp-analisis` y `mcp-it`:
+
+```bash
+docker compose down
+docker compose up -d --build --remove-orphans
+```
+
+Los puertos `8001` y `8002` dejan de publicarse. Las service accounts antiguas
+(`sa-direccion`, `sa-analisis`, `sa-it`) pueden borrarse desde la UI de Grafana; ya no
+se usan. El init elimina sus ficheros de token del volumen compartido. Las variables
+antiguas `MCP_GRAFANA_SERVER_TOKEN_*`, `MCP_*_PORT` y `GRAFANA_SA_*_NAME` de `.env`
+se ignoran; puedes borrarlas.
 
 ### Limitaciones
 
 - El agente **puede equivocarse con las consultas Flux**: genera la query a partir de
   la petición en lenguaje natural y puede producir una consulta incorrecta o
   incompleta. Conviene revisar los resultados y, si hace falta, dar la query exacta.
-- **Permisos**: las tres cuentas son `Viewer` (solo lectura) mientras el equipo de
-  Grafana no tenga montado el RBAC fino por carpetas. El reparto de dashboards por rol
-  y el rol de edición de IT llegarán con ese RBAC; hasta entonces IT tampoco edita.
+- **Permisos compartidos**: al haber una sola service account `Viewer`, todos los
+  clientes del MCP tienen los mismos permisos. No hay separación por rol; si más
+  adelante hace falta que IT edite o que un rol vea solo ciertas carpetas, habrá que
+  volver a separar instancias o poner un proxy que autentique y seleccione la service
+  account.
 - `down -v` borra el volumen `mcp-secrets`: en el siguiente `up` el init regenera los
   tokens automáticamente.
   Demo de hotspot (portal cautivo)
