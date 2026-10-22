@@ -1,21 +1,23 @@
 #!/bin/sh
-# create-grafana-sa.sh — crea las service accounts de Grafana (una por rol) y sus
-# tokens vía API, y los guarda en ficheros del volumen compartido.
+# create-grafana-sa.sh — crea la service account del MCP de Grafana y su token
+# vía API, y los guarda en un fichero del volumen compartido.
 #
-# Idempotente: para cada rol, si el fichero ya tiene un token válido, no crea nada.
-# Nunca imprime el valor de los tokens.
+# Idempotente: si el fichero ya tiene un token válido, no crea nada.
+# Nunca imprime el valor del token.
 #
 # Variables (vienen del entorno del servicio grafana-sa-init):
-#   GRAFANA_URL, GRAFANA_ADMIN_USER, GRAFANA_ADMIN_PASSWORD, GRAFANA_SA_ROLE,
-#   GRAFANA_SA_DIRECCION_NAME, GRAFANA_SA_DIRECCION_TOKEN_FILE,
-#   GRAFANA_SA_ANALISIS_NAME,  GRAFANA_SA_ANALISIS_TOKEN_FILE,
-#   GRAFANA_SA_IT_NAME,        GRAFANA_SA_IT_TOKEN_FILE
+#   GRAFANA_URL, GRAFANA_ADMIN_USER, GRAFANA_ADMIN_PASSWORD,
+#   GRAFANA_SA_NAME (por defecto sa-mcp), GRAFANA_SA_ROLE (por defecto Viewer),
+#   GRAFANA_SA_TOKEN_FILE (por defecto /shared/sa-mcp-token)
 set -eu
 
 : "${GRAFANA_URL:?Falta GRAFANA_URL}"
 : "${GRAFANA_ADMIN_USER:?Falta GRAFANA_ADMIN_USER}"
 : "${GRAFANA_ADMIN_PASSWORD:?Falta GRAFANA_ADMIN_PASSWORD}"
+
+SA_NAME="${GRAFANA_SA_NAME:-sa-mcp}"
 SA_ROLE="${GRAFANA_SA_ROLE:-Viewer}"
+TOKEN_FILE="${GRAFANA_SA_TOKEN_FILE:-/shared/sa-mcp-token}"
 
 api() { # $1: método, $2: path, $3 (opcional): cuerpo JSON
   if [ $# -ge 3 ]; then
@@ -76,6 +78,14 @@ ensure_sa() { # $1: nombre de la SA, $2: fichero de token
   echo "[sa-init] '$SA_NAME': token guardado en $TOKEN_FILE."
 }
 
-ensure_sa "${GRAFANA_SA_DIRECCION_NAME:-sa-direccion}" "${GRAFANA_SA_DIRECCION_TOKEN_FILE:-/shared/sa-direccion-token}"
-ensure_sa "${GRAFANA_SA_ANALISIS_NAME:-sa-analisis}" "${GRAFANA_SA_ANALISIS_TOKEN_FILE:-/shared/sa-analisis-token}"
-ensure_sa "${GRAFANA_SA_IT_NAME:-sa-it}" "${GRAFANA_SA_IT_TOKEN_FILE:-/shared/sa-it-token}"
+ensure_sa "$SA_NAME" "$TOKEN_FILE"
+
+# Limpia los ficheros del esquema antiguo de tres MCP. No borra las service
+# accounts de Grafana (se pueden eliminar a mano desde la UI si se desea).
+for OLD_FILE in /shared/sa-direccion-token /shared/sa-analisis-token /shared/sa-it-token; do
+  [ "$OLD_FILE" = "$TOKEN_FILE" ] && continue
+  if [ -e "$OLD_FILE" ]; then
+    rm -f "$OLD_FILE"
+    echo "[sa-init] token obsoleto eliminado: $OLD_FILE"
+  fi
+done
